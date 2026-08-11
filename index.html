@@ -1,0 +1,2167 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="بصيرة - منصة تحليل أداء الطلاب بالذكاء الاصطناعي من LearnaTech" />
+  <title>بصيرة | LearnaTech</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@700;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* ─── DESIGN TOKENS ─────────────────────────────────────── */
+    :root {
+      --ink:       #16233D;
+      --paper:     #EDEFEA;
+      --card:      #F7F8F4;
+      --growth:    #3E7859;
+      --highlight: #E3A93E;
+      --alert:     #B8503F;
+      --text:      #293230;
+      --border:    #D8DDD4;
+      --shadow-sm: 0 1px 3px rgba(22,35,61,.07), 0 1px 2px rgba(22,35,61,.04);
+      --shadow-md: 0 4px 12px rgba(22,35,61,.10), 0 2px 6px rgba(22,35,61,.06);
+      --shadow-lg: 0 16px 40px rgba(22,35,61,.14), 0 4px 12px rgba(22,35,61,.08);
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --transition: 200ms cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ─── RESET & BASE ──────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background: var(--paper);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Noto Kufi Arabic', sans-serif;
+      color: var(--ink);
+    }
+    a { text-decoration: none; color: inherit; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+    input, select, textarea { font-family: inherit; }
+    img { max-width: 100%; }
+
+    /* ─── SCROLLBAR ─────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    /* ─── UTILITY ───────────────────────────────────────────── */
+    .hidden { display: none !important; }
+    .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
+
+    /* ─── SKELETON SHIMMER ──────────────────────────────────── */
+    @keyframes shimmer {
+      0%   { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, var(--border) 25%, #e8ece6 50%, var(--border) 75%);
+      background-size: 800px 100%;
+      animation: shimmer 1.4s ease-in-out infinite;
+      border-radius: var(--radius-sm);
+    }
+
+    /* ─── BADGE ─────────────────────────────────────────────── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 99px; font-size: .76rem; font-weight: 600;
+    }
+    .badge-success  { background: #d6ede3; color: #2a5c42; }
+    .badge-warning  { background: #faefd2; color: #8a6118; }
+    .badge-alert    { background: #f5dbd7; color: #8a3028; }
+    .badge-neutral  { background: #e2e6e0; color: #4a5450; }
+    .badge-coming   {
+      background: linear-gradient(135deg, #faefd2, #fde9ac);
+      color: #7a5012;
+      border: 1px solid #f0cc76;
+      font-weight: 700;
+      font-family: 'Noto Kufi Arabic', sans-serif;
+    }
+
+    /* ─── CARD ──────────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+    }
+    .card-hover {
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* ─── BUTTON ────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px; padding: 10px 20px; border-radius: var(--radius-sm);
+      font-size: .9rem; font-weight: 600; transition: all var(--transition);
+    }
+    .btn-primary {
+      background: var(--growth); color: #fff;
+      box-shadow: 0 2px 8px rgba(62,120,89,.35);
+    }
+    .btn-primary:hover { background: #33664a; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(62,120,89,.4); }
+    .btn-secondary { background: var(--card); color: var(--ink); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-alert { background: var(--alert); color: #fff; }
+    .btn-alert:hover { background: #9c4133; }
+    .btn-ghost { color: var(--ink); padding: 8px 14px; border-radius: var(--radius-sm); }
+    .btn-ghost:hover { background: rgba(22,35,61,.07); }
+    .btn-sm { padding: 6px 14px; font-size: .82rem; }
+    .btn-lg { padding: 14px 28px; font-size: 1rem; }
+
+    /* ─── INPUT ─────────────────────────────────────────────── */
+    .input {
+      width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); background: white; color: var(--text);
+      font-size: .9rem; transition: border-color var(--transition), box-shadow var(--transition);
+      outline: none;
+    }
+    .input:focus { border-color: var(--growth); box-shadow: 0 0 0 3px rgba(62,120,89,.15); }
+    .label { display: block; font-size: .82rem; font-weight: 600; color: var(--ink); margin-bottom: 5px; }
+
+    /* ─── MODAL ─────────────────────────────────────────────── */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(22,35,61,.55);
+      backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center;
+      z-index: 1000; opacity: 0; transition: opacity var(--transition);
+    }
+    .modal-backdrop.open { opacity: 1; }
+    .modal-box {
+      background: var(--card); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg); max-width: 520px; width: 90%;
+      transform: scale(.94) translateY(10px); transition: transform var(--transition);
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-backdrop.open .modal-box { transform: scale(1) translateY(0); }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 26px 0;
+    }
+    .modal-body { padding: 16px 26px 26px; }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; background: var(--paper); color: var(--text);
+      transition: background var(--transition); flex-shrink: 0;
+    }
+    .modal-close:hover { background: var(--border); }
+
+    /* ─── COMING SOON ───────────────────────────────────────── */
+    .coming-soon-overlay {
+      text-align: center; padding: 60px 40px;
+      display: flex; flex-direction: column; align-items: center; gap: 18px;
+    }
+    .coming-soon-icon {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, #faefd2, #fde9ac);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(227,169,62,.3);
+    }
+
+    /* ─── STAT STRIP ────────────────────────────────────────── */
+    .stat-strip {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+    }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 20px 22px;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-label { font-size: .78rem; color: #6b7a74; font-weight: 500; margin-bottom: 8px; }
+    .stat-value { font-family: 'Noto Kufi Arabic', sans-serif; font-size: 1.9rem; font-weight: 900; color: var(--ink); line-height: 1; }
+    .stat-sub { font-size: .76rem; color: #6b7a74; margin-top: 6px; }
+
+    /* ─── TOAST ─────────────────────────────────────────────── */
+    #toast-container {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+      z-index: 2000; display: flex; flex-direction: column; gap: 10px; align-items: center;
+    }
+    .toast {
+      background: var(--ink); color: #fff; padding: 12px 22px; border-radius: 99px;
+      font-size: .88rem; font-weight: 500; box-shadow: var(--shadow-lg);
+      animation: toastIn .3s ease forwards;
+      display: flex; align-items: center; gap: 8px;
+    }
+    @keyframes toastIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .toast.success { background: var(--growth); }
+    .toast.warning { background: var(--highlight); color: var(--ink); }
+    .toast.error   { background: var(--alert); }
+
+    /* ─── PROGRESS BAR ──────────────────────────────────────── */
+    .progress-bar-track {
+      height: 8px; background: var(--border); border-radius: 99px; overflow: hidden;
+    }
+    .progress-bar-fill { height: 100%; border-radius: 99px; transition: width .6s ease; }
+
+    /* ─── AVATAR ────────────────────────────────────────────── */
+    .avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Noto Kufi Arabic', sans-serif;
+      font-weight: 700; font-size: .9rem;
+      flex-shrink: 0;
+    }
+
+    /* ─── TABLE ─────────────────────────────────────────────── */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th {
+      background: var(--paper); text-align: right; padding: 11px 16px;
+      font-size: .78rem; font-weight: 600; color: #6b7a74; border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .data-table td {
+      padding: 13px 16px; border-bottom: 1px solid var(--border); font-size: .88rem;
+      vertical-align: middle;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tbody tr { transition: background var(--transition); }
+    .data-table tbody tr:hover { background: rgba(62,120,89,.04); cursor: pointer; }
+
+    /* ─── SECTION HEADER ────────────────────────────────────── */
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-family: 'Noto Kufi Arabic', sans-serif;
+      font-weight: 700; font-size: 1.05rem; color: var(--ink);
+    }
+
+    /* ─── RISK INDICATOR ────────────────────────────────────── */
+    .risk-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    .risk-at-risk { background: var(--alert); }
+    .risk-watch   { background: var(--highlight); }
+    .risk-normal  { background: var(--growth); }
+
+    /* ─── PAGE TRANSITIONS ──────────────────────────────────── */
+    .page { animation: fadeIn .25s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ─── SCORE ENTRY FORM ──────────────────────────────────── */
+    .question-row {
+      display: grid; grid-template-columns: 1fr 1fr 100px 40px;
+      gap: 10px; align-items: center; margin-bottom: 10px;
+    }
+    @media (max-width: 600px) {
+      .question-row { grid-template-columns: 1fr 80px 36px; }
+      .question-row .skill-col { display: none; }
+    }
+
+    /* ─── REMEDIAL QUIZ ─────────────────────────────────────── */
+    .quiz-question {
+      background: white; border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 20px;
+      margin-bottom: 14px;
+    }
+    .quiz-option {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); margin-top: 8px;
+      cursor: pointer; transition: all var(--transition);
+    }
+    .quiz-option:hover { border-color: var(--growth); background: rgba(62,120,89,.05); }
+    .quiz-option.selected { border-color: var(--growth); background: rgba(62,120,89,.10); }
+    .quiz-option input { accent-color: var(--growth); }
+
+    /* ─── CHART CONTAINER ───────────────────────────────────── */
+    .chart-wrap { position: relative; }
+
+    /* ─── PRINT ─────────────────────────────────────────────── */
+    @media print {
+      #nav, #top-bar, .no-print { display: none !important; }
+      .card { box-shadow: none !important; border: 1px solid #ccc !important; }
+      body { background: white; }
+    }
+
+    /* ─── LAYOUT ────────────────────────────────────────────── */
+    #app { min-height: 100vh; }
+
+    /* Landing */
+    #landing-screen {
+      min-height: 100vh; background: var(--ink);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 40px 20px;
+    }
+    .landing-logo {
+      font-family: 'Noto Kufi Arabic', sans-serif;
+      font-weight: 900; font-size: 3rem; color: #fff; letter-spacing: -1px;
+    }
+    .landing-logo span { color: var(--growth); }
+    .landing-tagline { color: #a8b8c8; font-size: .95rem; margin-top: 8px; text-align: center; max-width: 420px; }
+    .landing-divider { width: 40px; height: 2px; background: var(--growth); margin: 28px auto; }
+    .landing-cards {
+      display: flex; gap: 20px; margin-top: 10px;
+      flex-wrap: wrap; justify-content: center;
+    }
+    .landing-card {
+      width: 240px; padding: 32px 28px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius-lg); cursor: pointer;
+      transition: all .3s ease;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+      position: relative; overflow: hidden;
+    }
+    .landing-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.01));
+    }
+    .landing-card:hover {
+      border-color: var(--growth);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(62,120,89,.25);
+    }
+    .landing-card-icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(62,120,89,.2);
+    }
+    .landing-card-title {
+      font-family: 'Noto Kufi Arabic', sans-serif;
+      font-weight: 700; font-size: 1.15rem; color: #fff; text-align: center;
+    }
+    .landing-card-sub { font-size: .8rem; color: #a8b8c8; text-align: center; }
+    .landing-brand { margin-top: 48px; color: #5a7080; font-size: .78rem; }
+
+    /* App shell with sidebar */
+    #shell { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    #nav {
+      width: 240px; background: var(--ink); min-height: 100vh;
+      display: flex; flex-direction: column;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+    }
+    .nav-logo {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .nav-logo-text {
+      font-family: 'Noto Kufi Arabic', sans-serif;
+      font-weight: 900; font-size: 1.5rem; color: #fff;
+    }
+    .nav-logo-text span { color: var(--growth); }
+    .nav-logo-sub { font-size: .72rem; color: #5a7a8a; margin-top: 2px; }
+    .nav-items { padding: 16px 12px; flex: 1; }
+    .nav-group-label {
+      font-size: .68rem; font-weight: 600; color: #3a5a6a; text-transform: uppercase;
+      letter-spacing: .05em; padding: 0 8px; margin: 16px 0 8px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: var(--radius-sm);
+      color: #8aa0b0; font-size: .88rem; font-weight: 500;
+      cursor: pointer; transition: all var(--transition);
+      margin-bottom: 2px; position: relative;
+    }
+    .nav-item svg { flex-shrink: 0; opacity: .7; }
+    .nav-item:hover { background: rgba(255,255,255,.07); color: #c8d8e0; }
+    .nav-item:hover svg { opacity: 1; }
+    .nav-item.active { background: rgba(62,120,89,.22); color: #fff; }
+    .nav-item.active svg { opacity: 1; }
+    .nav-item.active::before {
+      content: ''; position: absolute; right: 0; top: 25%; bottom: 25%;
+      width: 3px; background: var(--growth); border-radius: 99px;
+    }
+    .nav-bottom {
+      padding: 16px 12px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .nav-role-chip {
+      background: rgba(62,120,89,.2); color: #7ecaa0;
+      border-radius: var(--radius-sm); padding: 8px 12px;
+      font-size: .8rem; font-weight: 600; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* Main content */
+    #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+    /* Top bar */
+    #top-bar {
+      height: 64px; background: white; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px; position: sticky; top: 0; z-index: 100; flex-shrink: 0;
+    }
+    .top-bar-title { font-family: 'Noto Kufi Arabic', sans-serif; font-weight: 700; font-size: 1.05rem; color: var(--ink); }
+    .top-bar-right { display: flex; align-items: center; gap: 14px; }
+    .top-bar-class {
+      background: var(--paper); border: 1px solid var(--border);
+      border-radius: 99px; padding: 5px 14px; font-size: .82rem; font-weight: 600; color: var(--ink);
+    }
+
+    /* Content area */
+    #content { flex: 1; padding: 28px; overflow-y: auto; }
+
+    /* Mobile nav toggle */
+    #nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 8px; color: var(--ink); }
+    #nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 199; }
+
+    @media (max-width: 768px) {
+      #nav { position: fixed; right: 0; top: 0; z-index: 200; transform: translateX(100%); transition: transform var(--transition); }
+      #nav.open { transform: translateX(0); }
+      #nav-overlay { display: block; }
+      #nav-overlay.open { display: block; }
+      #nav-toggle { display: flex; }
+      #main { width: 100%; }
+      #content { padding: 16px; }
+      #top-bar { padding: 0 16px; }
+      .stat-strip { grid-template-columns: 1fr 1fr; }
+      .landing-card { width: 100%; max-width: 340px; }
+    }
+
+    /* ─── PARENT DASHBOARD ──────────────────────────────────── */
+    .parent-hero {
+      background: linear-gradient(135deg, var(--growth) 0%, #2d5e42 100%);
+      border-radius: var(--radius-lg); padding: 32px;
+      color: white; margin-bottom: 24px; position: relative; overflow: hidden;
+    }
+    .parent-hero::before {
+      content: ''; position: absolute; top: -40px; left: -40px;
+      width: 200px; height: 200px; border-radius: 50%;
+      background: rgba(255,255,255,.06);
+    }
+    .parent-hero-grade {
+      font-family: 'Noto Kufi Arabic', sans-serif;
+      font-weight: 900; font-size: 3rem; line-height: 1; color: rgba(255,255,255,.95);
+    }
+    .parent-hero-label { font-size: .82rem; opacity: .75; margin-bottom: 4px; }
+    .parent-insight {
+      font-size: .94rem; opacity: .85; max-width: 360px; line-height: 1.7;
+    }
+
+    /* ─── TREND CHIP ────────────────────────────────────────── */
+    .trend-up   { color: var(--growth); font-size: .8rem; font-weight: 600; }
+    .trend-down { color: var(--alert);  font-size: .8rem; font-weight: 600; }
+    .trend-flat { color: #8a9890;       font-size: .8rem; font-weight: 600; }
+
+    /* ─── TABS ──────────────────────────────────────────────── */
+    .tab-bar {
+      display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 24px;
+      overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch;
+    }
+    .tab-btn {
+      padding: 10px 18px; font-size: .88rem; font-weight: 600; color: #6b7a74;
+      border-bottom: 3px solid transparent; cursor: pointer; transition: all var(--transition);
+      white-space: nowrap; background: none;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .tab-btn:hover { color: var(--ink); }
+    .tab-btn.active { color: var(--growth); border-bottom-color: var(--growth); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeIn .2s ease; }
+
+    /* ─── EARLY WARNING ─────────────────────────────────────── */
+    .warning-card {
+      border-right: 4px solid var(--alert);
+      border-radius: var(--radius-md);
+      background: white; padding: 16px 20px;
+      margin-bottom: 12px; display: flex; align-items: flex-start; gap: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .warning-reasons { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .warning-reason-chip {
+      background: #f5dbd7; color: #8a3028; border-radius: 99px;
+      padding: 3px 10px; font-size: .74rem; font-weight: 600;
+    }
+
+    /* ─── STUDENT DETAIL ────────────────────────────────────── */
+    .student-header {
+      background: var(--ink); border-radius: var(--radius-lg);
+      padding: 28px 32px; margin-bottom: 24px;
+      display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    }
+    .student-avatar-lg {
+      width: 72px; height: 72px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Noto Kufi Arabic', sans-serif;
+      font-weight: 900; font-size: 1.4rem; flex-shrink: 0;
+    }
+    .student-info h2 { color: white; font-size: 1.3rem; margin-bottom: 6px; }
+    .student-info-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .student-info-chip {
+      background: rgba(255,255,255,.12); color: rgba(255,255,255,.75);
+      border-radius: 99px; padding: 3px 12px; font-size: .78rem;
+    }
+    .student-grade-badge {
+      font-family: 'Noto Kufi Arabic', sans-serif; font-weight: 900;
+      font-size: 1.6rem; padding: 12px 20px; border-radius: var(--radius-md);
+      margin-right: auto; text-align: center;
+    }
+
+    /* ─── AI RECOMMENDATION ─────────────────────────────────── */
+    .ai-card {
+      background: linear-gradient(135deg, #f0f7f3, #e8f4ed);
+      border: 1px solid #c4e0cf; border-radius: var(--radius-md); padding: 22px;
+    }
+    .ai-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+    }
+    .ai-icon {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--growth); color: white;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ─── SKILL GAP LIST ────────────────────────────────────── */
+    .skill-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 16px; background: white;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+    }
+    .skill-mastery { font-size: .78rem; font-weight: 600; color: #6b7a74; min-width: 38px; text-align: center; }
+
+    /* ─── REPORT ────────────────────────────────────────────── */
+    .report-header {
+      text-align: center; padding: 32px; background: var(--ink);
+      border-radius: var(--radius-lg); margin-bottom: 24px; color: white;
+    }
+    .report-school { font-size: .85rem; opacity: .65; margin-bottom: 8px; }
+    .report-title { font-family: 'Noto Kufi Arabic', sans-serif; font-size: 1.5rem; font-weight: 900; }
+    .report-period { font-size: .85rem; opacity: .7; margin-top: 4px; }
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <!-- Toast container -->
+  <div id="toast-container"></div>
+
+  <!-- Landing screen -->
+  <div id="landing-screen">
+    <div style="text-align:center">
+      <div class="landing-logo">بصيرة<span>.</span></div>
+      <div class="landing-tagline">منصة تحليل أداء الطلاب بالذكاء الاصطناعي — حوّل بيانات الدرجات إلى رؤى قابلة للتنفيذ</div>
+    </div>
+    <div class="landing-divider"></div>
+    <div class="landing-cards">
+      <div class="landing-card" onclick="enterRole('teacher')" id="btn-enter-teacher">
+        <div class="landing-card-icon">
+          <svg width="30" height="30" fill="none" stroke="#3E7859" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="landing-card-title">ادخل كمعلم</div>
+        <div class="landing-card-sub">لوحة تحليلات الفصل الدراسي والإنذار المبكر</div>
+      </div>
+      <div class="landing-card" onclick="enterRole('parent')" id="btn-enter-parent">
+        <div class="landing-card-icon">
+          <svg width="30" height="30" fill="none" stroke="#3E7859" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </div>
+        <div class="landing-card-title">ادخل كولي أمر</div>
+        <div class="landing-card-sub">متابعة تقدّم ابنك / ابنتك بلغة واضحة وعملية</div>
+      </div>
+    </div>
+    <div class="landing-brand">LearnaTech © 2025 — جميع الحقوق محفوظة</div>
+  </div>
+
+  <!-- App shell -->
+  <div id="shell" class="hidden">
+    <!-- Nav overlay (mobile) -->
+    <div id="nav-overlay" onclick="toggleNav()"></div>
+
+    <!-- Sidebar -->
+    <nav id="nav">
+      <div class="nav-logo">
+        <div class="nav-logo-text">بصيرة<span style="color:var(--growth)">.</span></div>
+        <div class="nav-logo-sub">LearnaTech</div>
+      </div>
+      <div class="nav-items" id="nav-items">
+        <!-- populated by JS -->
+      </div>
+      <div class="nav-bottom">
+        <div class="nav-role-chip" id="nav-role-chip">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10"/></svg>
+          <span id="nav-role-label"></span>
+        </div>
+        <button class="btn btn-secondary" style="width:100%;font-size:.82rem" onclick="exitToLanding()">
+          ← العودة إلى اختيار الدور
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main -->
+    <div id="main">
+      <div id="top-bar">
+        <button id="nav-toggle" onclick="toggleNav()" aria-label="القائمة">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <span class="top-bar-title" id="top-bar-title">نظرة عامة</span>
+        <div class="top-bar-right">
+          <span class="top-bar-class">الصف السادس «ب»</span>
+        </div>
+      </div>
+      <div id="content">
+        <!-- pages rendered here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   DATA
+══════════════════════════════════════════════════════════════ */
+
+// API key loaded from window.BASEERA_CONFIG (set in config.js, not in repo)
+const OPENAI_KEY = (typeof window !== 'undefined' && window.BASEERA_CONFIG && window.BASEERA_CONFIG.openaiKey) || '';
+
+const SUBJECTS = [
+  { id: 'math',    name: 'الرياضيات',       color: '#3E7859' },
+  { id: 'arabic',  name: 'اللغة العربية',    color: '#16233D' },
+  { id: 'science', name: 'العلوم',           color: '#E3A93E' },
+  { id: 'english', name: 'اللغة الإنجليزية', color: '#B8503F' },
+];
+
+const WEEKS = ['الأسبوع 1','الأسبوع 2','الأسبوع 3','الأسبوع 4','الأسبوع 5','الأسبوع 6'];
+
+// Risk: 'normal' | 'watch' | 'at-risk'
+const STUDENTS = [
+  // AT-RISK (2)
+  {
+    id:'s01', name:'عمر خالد المنصور', risk:'at-risk', absences:4,
+    grades:{ math:[78,71,65,61,58,54], arabic:[74,72,71,70,69,68], science:[80,78,76,74,73,72], english:[65,63,61,59,57,55] },
+    skillGaps:[
+      { subject:'math',    skill:'طرح الكسور بمقامات مختلفة', mastery:32 },
+      { subject:'english', skill:'الأفعال غير المنتظمة', mastery:40 },
+    ],
+    flagReasons:['تراجع مستمر في الرياضيات','4 غيابات خلال 3 أسابيع','ضعف متصاعد في الإنجليزية'],
+    aiRec: 'يحتاج عمر إلى تدخل فوري في مهارة طرح الكسور بمقامات مختلفة. يُنصح بجلسة تعزيزية فردية وتدريبات يومية قصيرة لمدة 10 دقائق، مع إخطار ولي الأمر بالتراجع الملحوظ.',
+  },
+  {
+    id:'s02', name:'لينا عبد الرحمن الشمري', risk:'at-risk', absences:1,
+    grades:{ math:[72,73,71,70,72,71], arabic:[64,63,62,60,61,59], science:[78,77,76,75,76,74], english:[70,69,68,68,67,66] },
+    skillGaps:[
+      { subject:'arabic', skill:'التمييز بين الفعل المضارع المرفوع والمنصوب', mastery:28 },
+      { subject:'arabic', skill:'استخدام الضمائر المنفصلة والمتصلة', mastery:38 },
+    ],
+    flagReasons:['تراجع ثابت في اللغة العربية','ضعف متكرر في قواعد الإعراب'],
+    aiRec: 'لينا تُظهر فجوة واضحة في إعراب الفعل المضارع. يُقترح اختبار علاجي مركّز على هذه المهارة مع تمارين يومية في التحليل النحوي. استشارة معلمة اللغة العربية ضرورية.',
+  },
+
+  // WATCH (4)
+  {
+    id:'s03', name:'فيصل نواف العتيبي', risk:'watch', absences:1,
+    grades:{ math:[77,75,74,73,74,72], arabic:[80,79,78,77,76,75], science:[82,81,80,79,78,77], english:[71,70,70,69,68,68] },
+    skillGaps:[{ subject:'math', skill:'الأعداد النسبية والنسب المئوية', mastery:52 }],
+    flagReasons:['تراجع طفيف في الرياضيات','ضعف في النسب المئوية'],
+    aiRec: 'أداء فيصل مستقر عموماً لكن يلاحظ تراجع تدريجي في الرياضيات. يُنصح بممارسة تمارين النسب المئوية أسبوعياً.',
+  },
+  {
+    id:'s04', name:'منى سعد القحطاني', risk:'watch', absences:2,
+    grades:{ math:[79,78,77,76,75,74], arabic:[83,82,81,81,80,79], science:[86,85,84,83,83,82], english:[75,74,73,72,71,71] },
+    skillGaps:[{ subject:'english', skill:'الجمل الشرطية (Conditionals)', mastery:48 }],
+    flagReasons:['غياب متكرر','تراجع في الإنجليزية'],
+    aiRec: 'منى طالبة مجتهدة لكن الغيابات تؤثر على تراكم المعرفة. يُنصح بمتابعة ولي الأمر لتحسين الانتظام.',
+  },
+  {
+    id:'s05', name:'يوسف محمد الدوسري', risk:'watch', absences:0,
+    grades:{ math:[75,74,73,72,73,72], arabic:[77,76,77,75,74,74], science:[80,79,78,77,76,76], english:[69,68,67,66,67,66] },
+    skillGaps:[{ subject:'math', skill:'المعادلات ذات المجهول الواحد', mastery:55 }],
+    flagReasons:['أداء متذبذب في العلوم'],
+    aiRec: 'يوسف يمتلك قاعدة معرفية جيدة. التمرن على المعادلات بصفة يومية سيُسرّع التقدم.',
+  },
+  {
+    id:'s06', name:'ريم إبراهيم السبيعي', risk:'watch', absences:1,
+    grades:{ math:[81,80,79,78,78,77], arabic:[79,78,77,77,76,75], science:[83,82,81,80,80,79], english:[72,71,71,70,70,69] },
+    skillGaps:[{ subject:'science', skill:'خلايا الكائنات الحية', mastery:58 }],
+    flagReasons:['تراجع طفيف في العلوم'],
+    aiRec: 'ريم في مسار جيد. مراجعة وحدة الخلايا الحية ستُعيد ثقتها بالعلوم.',
+  },
+
+  // NORMAL — good performers
+  {
+    id:'s07', name:'سارة طارق الأنصاري', risk:'normal', absences:0,
+    grades:{ math:[91,92,93,92,93,94], arabic:[88,89,90,91,90,92], science:[94,95,94,93,95,96], english:[87,88,89,90,90,91] },
+    skillGaps:[], flagReasons:[], aiRec:'سارة من أفضل الطلاب في الفصل. حافظ على مشاركتها بمسائل إثرائية متقدمة.',
+  },
+  {
+    id:'s08', name:'أحمد عادل الزهراني', risk:'normal', absences:0,
+    grades:{ math:[89,90,88,91,90,92], arabic:[85,86,87,86,87,88], science:[90,91,92,91,92,93], english:[82,83,84,84,85,86] },
+    skillGaps:[], flagReasons:[], aiRec:'أداء ممتاز ومنتظم. يُمكن تشجيعه على قيادة مجموعات الدراسة.',
+  },
+  {
+    id:'s09', name:'نورة سلمان الغامدي', risk:'normal', absences:1,
+    grades:{ math:[86,87,88,87,88,89], arabic:[90,91,92,91,92,93], science:[87,88,89,88,89,90], english:[84,85,86,86,87,87] },
+    skillGaps:[], flagReasons:[], aiRec:'نورة متفوقة في اللغة العربية. دعها تنمّي هذه المهارة بأنشطة إضافية.',
+  },
+  {
+    id:'s10', name:'عبد العزيز راشد المطيري', risk:'normal', absences:0,
+    grades:{ math:[88,89,90,90,91,92], arabic:[82,83,84,84,85,86], science:[85,86,87,87,88,89], english:[80,81,82,83,83,84] },
+    skillGaps:[], flagReasons:[], aiRec:'عبد العزيز يُظهر نمواً ثابتاً. حافظ على هذه الوتيرة.',
+  },
+  {
+    id:'s11', name:'حنان وليد البقمي', risk:'normal', absences:0,
+    grades:{ math:[83,84,85,85,86,87], arabic:[86,87,88,88,89,90], science:[88,89,90,90,91,92], english:[81,82,83,83,84,85] },
+    skillGaps:[], flagReasons:[], aiRec:'طالبة منتظمة ومثابرة. تستفيد من التعلم الذاتي الموجّه.',
+  },
+  {
+    id:'s12', name:'علي عمر الشهراني', risk:'normal', absences:1,
+    grades:{ math:[85,86,87,86,87,88], arabic:[80,81,82,82,83,84], science:[82,83,84,84,85,86], english:[79,80,81,81,82,83] },
+    skillGaps:[], flagReasons:[], aiRec:'أداء جيد ومستقر. يُنصح بتحدي نفسه في مسائل أكثر تعقيداً.',
+  },
+  {
+    id:'s13', name:'دانة فهد العسيري', risk:'normal', absences:0,
+    grades:{ math:[87,88,89,89,90,91], arabic:[91,92,93,92,93,94], science:[89,90,91,91,92,93], english:[85,86,87,87,88,89] },
+    skillGaps:[], flagReasons:[], aiRec:'دانة من الطلاب المميزين. تستحق الترشيح لبرامج الموهبة.',
+  },
+  {
+    id:'s14', name:'محمد جاسم العجمي', risk:'normal', absences:2,
+    grades:{ math:[80,81,82,81,82,83], arabic:[78,79,80,80,81,82], science:[81,82,83,83,84,85], english:[76,77,78,78,79,80] },
+    skillGaps:[], flagReasons:[], aiRec:'أداء جيد رغم الغيابين. الانتظام سيُعزز مكتسباته.',
+  },
+  {
+    id:'s15', name:'شيخة سعيد الكعبي', risk:'normal', absences:0,
+    grades:{ math:[84,85,86,86,87,88], arabic:[87,88,89,89,90,91], science:[85,86,87,87,88,89], english:[82,83,84,84,85,86] },
+    skillGaps:[], flagReasons:[], aiRec:'طالبة متوازنة ومنتظمة. استمر في التشجيع.',
+  },
+  {
+    id:'s16', name:'خالد منصور الرشيدي', risk:'normal', absences:0,
+    grades:{ math:[82,83,84,84,85,86], arabic:[81,82,83,83,84,85], science:[83,84,85,85,86,87], english:[78,79,80,80,81,82] },
+    skillGaps:[], flagReasons:[], aiRec:'خالد طالب منضبط. تشجيعه يزيد ثقته.',
+  },
+  {
+    id:'s17', name:'هيفاء تركي الحربي', risk:'normal', absences:0,
+    grades:{ math:[90,91,92,91,92,93], arabic:[88,89,90,90,91,92], science:[91,92,93,93,94,95], english:[86,87,88,88,89,90] },
+    skillGaps:[], flagReasons:[], aiRec:'هيفاء من الطلاب المتميزين. يُمكن تكليفها بمشاريع بحثية مبسّطة.',
+  },
+  {
+    id:'s18', name:'إبراهيم يوسف السعدون', risk:'normal', absences:1,
+    grades:{ math:[83,84,85,85,86,87], arabic:[79,80,81,81,82,83], science:[84,85,86,86,87,88], english:[77,78,79,79,80,81] },
+    skillGaps:[], flagReasons:[], aiRec:'أداء متصاعد بشكل إيجابي. واصل التشجيع.',
+  },
+  {
+    id:'s19', name:'أميرة صالح الحسيني', risk:'normal', absences:0,
+    grades:{ math:[86,87,88,88,89,90], arabic:[84,85,86,86,87,88], science:[87,88,89,89,90,91], english:[83,84,85,85,86,87] },
+    skillGaps:[], flagReasons:[], aiRec:'أميرة طالبة مثالية في الالتزام. يُستحسن التنويع في أساليب التقييم.',
+  },
+  {
+    id:'s20', name:'بسمة عوض الشراري', risk:'normal', absences:0,
+    grades:{ math:[81,82,83,83,84,85], arabic:[85,86,87,87,88,89], science:[82,83,84,84,85,86], english:[80,81,82,82,83,84] },
+    skillGaps:[], flagReasons:[], aiRec:'بسمة تُجيد العمل الجماعي. استخدم ذلك في مشاريع المجموعات.',
+  },
+  {
+    id:'s21', name:'عبدالله فهد الجهني', risk:'normal', absences:1,
+    grades:{ math:[84,85,86,86,87,88], arabic:[82,83,84,84,85,86], science:[86,87,88,88,89,90], english:[79,80,81,81,82,83] },
+    skillGaps:[], flagReasons:[], aiRec:'طالب متميز في العلوم. شجّعه على التعمق في التجارب العلمية.',
+  },
+  {
+    id:'s22', name:'رنا محمود العلياني', risk:'normal', absences:0,
+    grades:{ math:[88,89,90,90,91,92], arabic:[90,91,92,92,93,94], science:[89,90,91,91,92,93], english:[85,86,87,87,88,89] },
+    skillGaps:[], flagReasons:[], aiRec:'رنا متميزة في اللغتين العربية والإنجليزية. شجّعها على المشاركة في المسابقات.',
+  },
+  {
+    id:'s23', name:'محمود سامي البلوي', risk:'normal', absences:2,
+    grades:{ math:[79,80,81,81,82,83], arabic:[77,78,79,79,80,81], science:[80,81,82,82,83,84], english:[75,76,77,77,78,79] },
+    skillGaps:[], flagReasons:[], aiRec:'أداء معقول. تشجيعه على تقليل الغيابات سيُحسّن تحصيله.',
+  },
+  {
+    id:'s24', name:'لطيفة ناصر الدهلوي', risk:'normal', absences:0,
+    grades:{ math:[85,86,87,87,88,89], arabic:[88,89,90,90,91,92], science:[86,87,88,88,89,90], english:[83,84,85,85,86,87] },
+    skillGaps:[], flagReasons:[], aiRec:'طالبة منتظمة ومتميزة. إسنادها مهام قيادية سيُطور مهاراتها.',
+  },
+  {
+    id:'s25', name:'تركي عبدالله القرني', risk:'normal', absences:0,
+    grades:{ math:[83,84,85,85,86,87], arabic:[81,82,83,83,84,85], science:[84,85,86,86,87,88], english:[79,80,81,81,82,83] },
+    skillGaps:[], flagReasons:[], aiRec:'أداء جيد ومتصاعد. استمرار الدعم الأكاديمي سيُحقق نتائج ممتازة.',
+  },
+];
+
+// Simulated remedial quiz questions per skill
+const QUIZ_BANK = {
+  'طرح الكسور بمقامات مختلفة': [
+    {
+      q: 'ما ناتج: ٣/٤ − ١/٣ ؟',
+      opts: ['٥/١٢','١/٦','٧/١٢','٢/٣'],
+      ans: 0, hint: 'ابحث عن المقام المشترك الأصغر بين 4 و3'
+    },
+    {
+      q: 'ما ناتج: ٢/٣ − ١/٤ ؟',
+      opts: ['١/٣','٥/١٢','١/٢','٧/١٢'],
+      ans: 1, hint: 'المقام المشترك الأصغر بين 3 و4 هو 12'
+    },
+    {
+      q: 'خالد لديه ٧/٨ كيلوغرام من الدقيق واستخدم ٣/٥ كيلوغرام. كم تبقّى معه؟',
+      opts: ['١١/٤٠','١٧/٤٠','٢٣/٤٠','٩/٤٠'],
+      ans: 1, hint: 'المقام المشترك الأصغر بين 8 و5 هو 40'
+    },
+    {
+      q: 'ما ناتج: ٥/٦ − ٢/٩ ؟',
+      opts: ['٣/٣','١١/١٨','١٣/١٨','٧/١٨'],
+      ans: 1, hint: 'المقام المشترك الأصغر بين 6 و9 هو 18'
+    },
+    {
+      q: 'رتّب الخطوات الصحيحة لطرح ١/٢ من ٣/٥: أي العبارات صحيحة؟',
+      opts: ['نجد المقام المشترك ثم نطرح البسطين','نطرح المقامين أولاً','نضرب الكسرين ثم نطرح','نقلب الكسر الثاني ونجمع'],
+      ans: 0, hint: 'الخطوة الأولى دائماً هي توحيد المقامات'
+    },
+  ],
+  'التمييز بين الفعل المضارع المرفوع والمنصوب': [
+    {
+      q: 'ما إعراب الفعل "يدرسَ" في جملة: "أريد أن يدرسَ أخي بجد"؟',
+      opts: ['فعل مضارع مرفوع','فعل مضارع منصوب بـ أن','فعل مضارع مجزوم','فعل ماضٍ'],
+      ans: 1, hint: 'الفعل المضارع ينتصب بعد حروف النصب مثل: أن، لن، كي، حتى'
+    },
+    {
+      q: 'أي الجمل تحتوي على فعل مضارع مرفوع؟',
+      opts: ['لن يتأخرَ الطالبُ','يجتهدُ الطالبُ في دراسته','كي تنجحَ يجب أن تذاكر','أريد أن يفهمَ الجميع'],
+      ans: 1, hint: 'الفعل المضارع يكون مرفوعاً إذا لم يسبقه ناصب أو جازم'
+    },
+    {
+      q: 'أيّ الحروف التالية تنصب الفعل المضارع؟',
+      opts: ['لم، لا','أن، لن، كي، حتى','قد، سوف','ما، لمّا'],
+      ans: 1, hint: 'حروف النصب تُعرف بالأحرف التي تجعل الفعل المضارع منصوباً'
+    },
+    {
+      q: 'ما علامة نصب الفعل المضارع الصحيح؟',
+      opts: ['الضمة','السكون','الفتحة','الكسرة'],
+      ans: 2, hint: 'الفعل المضارع الصحيح الآخر ينصب بالفتحة الظاهرة'
+    },
+    {
+      q: '"لن يفشلَ المجتهد" — ما إعراب "يفشل" ؟',
+      opts: ['مرفوع بالضمة','منصوب بالفتحة بعد لن','مجزوم بالسكون','مبني على الفتح'],
+      ans: 1, hint: '"لن" من حروف النصب التي تنصب الفعل المضارع'
+    },
+  ],
+  'الأفعال غير المنتظمة': [
+    {
+      q: 'What is the past tense of "go"?',
+      opts: ['goed','gone','went','going'],
+      ans: 2, hint: '"Go" is irregular — it changes completely in past tense'
+    },
+    {
+      q: 'Which sentence uses an irregular verb correctly?',
+      opts: ['She buyed a new book','He taked the exam','They went to school','We eated dinner'],
+      ans: 2, hint: '"Go → went" is a common irregular past tense'
+    },
+    {
+      q: 'What is the past tense of "write"?',
+      opts: ['writed','written','wrote','writing'],
+      ans: 2, hint: '"Write → wrote" is an irregular verb'
+    },
+    {
+      q: 'Fill in: "She _____ her homework yesterday." (do)',
+      opts: ['does','did','done','doing'],
+      ans: 1, hint: '"Do → did" is an irregular past tense form'
+    },
+    {
+      q: 'Which verb is irregular?',
+      opts: ['play','jump','eat','walk'],
+      ans: 2, hint: '"Eat → ate" does not follow regular -ed pattern'
+    },
+  ],
+};
+// fallback generic quiz
+function getQuizForSkill(skill) {
+  return QUIZ_BANK[skill] || QUIZ_BANK['طرح الكسور بمقامات مختلفة'];
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════════ */
+let STATE = {
+  role: null,           // 'teacher' | 'parent'
+  page: 'landing',
+  selectedStudentId: null,
+  selectedSkill: null,
+  teacherTab: 'overview',
+  studentDetailTab: 'overview',
+  quizQuestions: [],
+  quizAnswers: {},
+  quizLoading: false,
+  scoreRows: [{ question:'', skill:'', score:'' }],
+  scoreForm: { studentId:'all', subject:'math', examName:'' },
+  charts: {},           // chart.js instances
+};
+
+function setState(patch) {
+  STATE = { ...STATE, ...patch };
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════════════ */
+function $(id) { return document.getElementById(id); }
+function qs(sel, parent) { return (parent||document).querySelector(sel); }
+function qsa(sel, parent) { return [...(parent||document).querySelectorAll(sel)]; }
+
+function avgGrade(grades) {
+  const all = Object.values(grades).map(arr => arr[arr.length-1]);
+  return Math.round(all.reduce((a,b)=>a+b,0)/all.length);
+}
+
+function subjectAvg(subjectId) {
+  const vals = STUDENTS.map(s => s.grades[subjectId][5]);
+  return Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);
+}
+
+function gradeColor(g) {
+  if (g >= 85) return 'var(--growth)';
+  if (g >= 70) return 'var(--highlight)';
+  return 'var(--alert)';
+}
+
+function gradeBadgeClass(g) {
+  if (g >= 85) return 'badge-success';
+  if (g >= 70) return 'badge-warning';
+  return 'badge-alert';
+}
+
+function riskBadge(risk) {
+  if (risk === 'at-risk') return `<span class="badge badge-alert">⚠ في خطر</span>`;
+  if (risk === 'watch')   return `<span class="badge badge-warning">◉ يحتاج متابعة</span>`;
+  return `<span class="badge badge-success">✓ طبيعي</span>`;
+}
+
+function avatarColors(name) {
+  const colors = [
+    ['#d6ede3','#2a5c42'],['#dde8f5','#1a3a6a'],['#faefd2','#7a5012'],
+    ['#f5dbd7','#8a3028'],['#e8eaf6','#3949ab'],['#f3e5f5','#7b1fa2'],
+  ];
+  const i = name.charCodeAt(0) % colors.length;
+  return colors[i];
+}
+
+function initials(name) {
+  const parts = name.trim().split(' ');
+  return parts.length >= 2 ? parts[0][0]+parts[1][0] : parts[0].substring(0,2);
+}
+
+function destroyChart(key) {
+  if (STATE.charts[key]) { STATE.charts[key].destroy(); delete STATE.charts[key]; }
+}
+
+function showToast(msg, type='', duration=3000) {
+  const c = $('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, duration);
+}
+
+function openModal(id) {
+  const m = $(id);
+  if (!m) return;
+  m.classList.remove('hidden');
+  requestAnimationFrame(()=>m.classList.add('open'));
+}
+
+function closeModal(id) {
+  const m = $(id);
+  if (!m) return;
+  m.classList.remove('open');
+  setTimeout(()=>m.classList.add('hidden'), 220);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════════════════ */
+function enterRole(role) {
+  setState({ role });
+  $('landing-screen').classList.add('hidden');
+  $('shell').classList.remove('hidden');
+  buildNav(role);
+  navigateTo(role === 'teacher' ? 'teacher-overview' : 'parent-dashboard');
+}
+
+function exitToLanding() {
+  setState({ role: null, page: 'landing' });
+  $('shell').classList.add('hidden');
+  $('landing-screen').classList.remove('hidden');
+  // destroy all charts
+  Object.keys(STATE.charts).forEach(k=>{ try{STATE.charts[k].destroy();}catch(e){} });
+  STATE.charts = {};
+}
+
+function navigateTo(page, extra={}) {
+  setState({ page, ...extra });
+  renderPage(page);
+  setNavActive(page);
+  $('top-bar-title').textContent = PAGE_TITLES[page] || '';
+  // close mobile nav
+  $('nav').classList.remove('open');
+  $('nav-overlay').classList.remove('open');
+  window.scrollTo(0,0);
+}
+
+const PAGE_TITLES = {
+  'teacher-overview': 'نظرة عامة على الفصل',
+  'teacher-roster': 'قائمة الطلاب',
+  'teacher-student-detail': 'ملف الطالب',
+  'teacher-early-warning': 'الإنذار المبكر',
+  'teacher-score-entry': 'إدخال درجات الاختبار',
+  'teacher-report': 'التقرير الدوري',
+  'parent-dashboard': 'متابعة أداء الطالب',
+  'coming-student-app': 'تطبيق الطالب',
+  'coming-live': 'الأنشطة الحية',
+  'coming-comms': 'التواصل الذكي',
+  'coming-adaptive': 'الاختبار التكيفي',
+};
+
+function setNavActive(page) {
+  qsa('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.page === page);
+  });
+}
+
+function toggleNav() {
+  $('nav').classList.toggle('open');
+  $('nav-overlay').classList.toggle('open');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NAV BUILDER
+══════════════════════════════════════════════════════════════ */
+function iconSvg(name) {
+  const icons = {
+    overview: `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>`,
+    roster:   `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+    warning:  `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    entry:    `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+    report:   `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+    student:  `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`,
+    live:     `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49"/><path d="M7.76 7.76a6 6 0 0 0 0 8.49"/><path d="M20.07 4.93a10 10 0 0 1 0 14.14"/><path d="M3.93 4.93a10 10 0 0 0 0 14.14"/></svg>`,
+    comms:    `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+    adaptive: `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
+    parent:   `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+  };
+  return icons[name] || '';
+}
+
+function navItem(page, icon, label, badge='') {
+  return `<div class="nav-item" data-page="${page}" onclick="navigateTo('${page}')">${iconSvg(icon)}<span>${label}</span>${badge}</div>`;
+}
+
+function comingSoonBadge() {
+  return `<span class="badge badge-coming" style="margin-right:auto;font-size:.62rem;padding:2px 7px">قريباً</span>`;
+}
+
+function buildNav(role) {
+  const $items = $('nav-items');
+  $('nav-role-chip').innerHTML = `${iconSvg('overview')}<span id="nav-role-label">${role==='teacher'?'معلم':'ولي أمر'}</span>`;
+
+  if (role === 'teacher') {
+    $items.innerHTML = `
+      <div class="nav-group-label">الرئيسية</div>
+      ${navItem('teacher-overview', 'overview', 'نظرة عامة')}
+      ${navItem('teacher-roster', 'roster', 'قائمة الطلاب')}
+      ${navItem('teacher-early-warning', 'warning', 'الإنذار المبكر')}
+      <div class="nav-group-label">الأدوات</div>
+      ${navItem('teacher-score-entry', 'entry', 'إدخال الدرجات')}
+      ${navItem('teacher-report', 'report', 'التقرير الدوري')}
+      <div class="nav-group-label" style="display:flex;align-items:center;gap:8px">قادم قريباً ${comingSoonBadge()}</div>
+      ${navItem('coming-student-app', 'student', 'تطبيق الطالب')}
+      ${navItem('coming-live', 'live', 'أنشطة حية في الصف')}
+      ${navItem('coming-comms', 'comms', 'التواصل مع الأهل')}
+      ${navItem('coming-adaptive', 'adaptive', 'اختبار تكيفي ذكي')}
+    `;
+  } else {
+    $items.innerHTML = `
+      <div class="nav-group-label">الرئيسية</div>
+      ${navItem('parent-dashboard', 'parent', 'أداء الطالب')}
+      <div class="nav-group-label" style="display:flex;align-items:center;gap:8px">قادم قريباً ${comingSoonBadge()}</div>
+      ${navItem('coming-student-app', 'student', 'تطبيق تعلّم الطالب')}
+      ${navItem('coming-comms', 'comms', 'التواصل مع المعلم')}
+    `;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PAGE RENDERER
+══════════════════════════════════════════════════════════════ */
+function renderPage(page) {
+  // destroy previous charts
+  Object.keys(STATE.charts).forEach(k=>{ try{STATE.charts[k].destroy();}catch(e){} });
+  STATE.charts = {};
+
+  const c = $('content');
+  c.innerHTML = '';
+
+  const el = document.createElement('div');
+  el.className = 'page';
+  c.appendChild(el);
+
+  const renders = {
+    'teacher-overview':        renderTeacherOverview,
+    'teacher-roster':          renderTeacherRoster,
+    'teacher-student-detail':  renderStudentDetail,
+    'teacher-early-warning':   renderEarlyWarning,
+    'teacher-score-entry':     renderScoreEntry,
+    'teacher-report':          renderPeriodicReport,
+    'parent-dashboard':        renderParentDashboard,
+    'coming-student-app':      (el)=>renderComingSoon('تطبيق الطالب', 'مسار تعلّم شخصي ومساعد ذكاء اصطناعي متخصص بالمنهج الدراسي — مباشرةً بين يدي الطالب.', 'student', el),
+    'coming-live':             (el)=>renderComingSoon('الأنشطة الحية في الصف', 'أسئلة تفاعلية فورية لكل طالب أثناء الشرح — تتطلب جهازاً واحداً لكل طالب.', 'live', el),
+    'coming-comms':            (el)=>renderComingSoon('التواصل الذكي مع الأهل', 'ترجمة آلية للأسلوب وردود جاهزة للمعلم — تواصل فعّال بلمسة واحدة.', 'comms', el),
+    'coming-adaptive':         (el)=>renderComingSoon('الاختبار التكيفي الذكي', 'تعديل مستوى صعوبة الأسئلة تلقائياً أثناء الاختبار بناءً على إجابات الطالب.', 'adaptive', el),
+  };
+
+  if (renders[page]) renders[page](el);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TEACHER OVERVIEW
+══════════════════════════════════════════════════════════════ */
+function renderTeacherOverview(el) {
+  const atRisk = STUDENTS.filter(s=>s.risk==='at-risk').length;
+  const watch  = STUDENTS.filter(s=>s.risk==='watch').length;
+  const classAvg = Math.round(STUDENTS.map(s=>avgGrade(s.grades)).reduce((a,b)=>a+b,0)/STUDENTS.length);
+
+  el.innerHTML = `
+    <!-- At-risk banner -->
+    ${atRisk>0?`<div style="background:linear-gradient(135deg,#f5dbd7,#fceae8);border:1px solid #e8c4be;border-radius:var(--radius-md);padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;gap:14px">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--alert);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="18" height="18" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div>
+        <div style="font-family:'Noto Kufi Arabic',sans-serif;font-weight:700;color:var(--alert);font-size:.95rem">${atRisk} طالب في خطر • ${watch} يحتاج متابعة</div>
+        <div style="font-size:.8rem;color:#7a3028;margin-top:2px">يُنصح بمراجعة قسم الإنذار المبكر اليوم</div>
+      </div>
+      <button class="btn btn-alert btn-sm" style="margin-right:auto;flex-shrink:0" onclick="navigateTo('teacher-early-warning')">عرض التفاصيل</button>
+    </div>`:''}
+
+    <!-- Stat strip -->
+    <div class="stat-strip" style="margin-bottom:24px">
+      <div class="stat-card">
+        <div class="stat-label">متوسط الفصل</div>
+        <div class="stat-value" style="color:${gradeColor(classAvg)}">${classAvg}%</div>
+        <div class="stat-sub">من 25 طالباً وطالبة</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">في خطر</div>
+        <div class="stat-value" style="color:var(--alert)">${atRisk}</div>
+        <div class="stat-sub">يستوجب تدخلاً فورياً</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">يحتاج متابعة</div>
+        <div class="stat-value" style="color:var(--highlight)">${watch}</div>
+        <div class="stat-sub">مراقبة دورية</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">أداء جيد ومتميز</div>
+        <div class="stat-value" style="color:var(--growth)">${STUDENTS.filter(s=>s.risk==='normal').length}</div>
+        <div class="stat-sub">في المسار الصحيح</div>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px" id="overview-charts">
+      <div class="card" style="padding:22px">
+        <div class="section-header"><span class="section-title">متوسط الأداء لكل مادة</span></div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="chart-subjects"></canvas>
+        </div>
+      </div>
+      <div class="card" style="padding:22px">
+        <div class="section-header"><span class="section-title">توزيع مستويات الأداء</span></div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="chart-dist"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent at-risk -->
+    <div class="card" style="padding:22px">
+      <div class="section-header">
+        <span class="section-title">الطلاب الأكثر إلحاحاً</span>
+        <button class="btn btn-ghost btn-sm" onclick="navigateTo('teacher-early-warning')">عرض الكل ←</button>
+      </div>
+      ${STUDENTS.filter(s=>s.risk!=='normal').slice(0,4).map(s=>{
+        const avg = avgGrade(s.grades);
+        const [bg,fg] = avatarColors(s.name);
+        return `<div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="navigateTo('teacher-student-detail',{selectedStudentId:'${s.id}'})">
+          <div class="avatar" style="background:${bg};color:${fg}">${initials(s.name)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:.9rem;color:var(--ink)">${s.name}</div>
+            <div style="font-size:.78rem;color:#6b7a74;margin-top:2px">${s.flagReasons[0]||''}</div>
+          </div>
+          ${riskBadge(s.risk)}
+          <div style="font-family:'Noto Kufi Arabic',sans-serif;font-weight:700;font-size:1.1rem;color:${gradeColor(avg)};min-width:40px;text-align:center">${avg}%</div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+
+  // draw charts after DOM ready
+  requestAnimationFrame(() => {
+    // Subject averages bar
+    const ctx1 = $('chart-subjects').getContext('2d');
+    STATE.charts['subjects'] = new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: SUBJECTS.map(s=>s.name),
+        datasets: [{
+          data: SUBJECTS.map(s=>subjectAvg(s.id)),
+          backgroundColor: SUBJECTS.map(s=>s.color+'cc'),
+          borderColor: SUBJECTS.map(s=>s.color),
+          borderWidth: 2, borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins:{ legend:{display:false} },
+        scales: {
+          y:{ min:50, max:100, grid:{color:'rgba(0,0,0,.05)'}, ticks:{font:{family:'IBM Plex Sans Arabic'}} },
+          x:{ grid:{display:false}, ticks:{font:{family:'IBM Plex Sans Arabic'}} }
+        }
+      }
+    });
+
+    // Distribution donut
+    const excellent = STUDENTS.filter(s=>avgGrade(s.grades)>=85).length;
+    const good      = STUDENTS.filter(s=>{ const a=avgGrade(s.grades); return a>=70&&a<85; }).length;
+    const weak      = STUDENTS.filter(s=>avgGrade(s.grades)<70).length;
+    const ctx2 = $('chart-dist').getContext('2d');
+    STATE.charts['dist'] = new Chart(ctx2, {
+      type: 'doughnut',
+      data: {
+        labels: ['متميز (≥85%)','جيد (70-84%)','ضعيف (<70%)'],
+        datasets: [{
+          data: [excellent, good, weak],
+          backgroundColor: ['#3E7859cc','#E3A93Ecc','#B8503Fcc'],
+          borderColor: ['#3E7859','#E3A93E','#B8503F'],
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        cutout: '60%',
+        plugins: {
+          legend:{ position:'bottom', labels:{ font:{family:'IBM Plex Sans Arabic'}, boxWidth:12 } }
+        }
+      }
+    });
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TEACHER ROSTER
+══════════════════════════════════════════════════════════════ */
+function renderTeacherRoster(el) {
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+      <input class="input" id="search-input" placeholder="ابحث باسم الطالب..." style="max-width:280px" oninput="filterRoster(this.value)" />
+      <select class="input" id="risk-filter" style="max-width:200px" onchange="filterRoster($('search-input').value)">
+        <option value="">جميع المستويات</option>
+        <option value="at-risk">في خطر</option>
+        <option value="watch">يحتاج متابعة</option>
+        <option value="normal">طبيعي</option>
+      </select>
+      <span style="font-size:.82rem;color:#6b7a74;margin-right:auto" id="roster-count">25 طالباً</span>
+    </div>
+    <div class="card" style="overflow:hidden">
+      <div style="overflow-x:auto">
+        <table class="data-table" id="roster-table">
+          <thead>
+            <tr>
+              <th>الطالب</th>
+              <th>الرياضيات</th>
+              <th>اللغة العربية</th>
+              <th>العلوم</th>
+              <th>الإنجليزية</th>
+              <th>الغيابات</th>
+              <th>الحالة</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="roster-body"></tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  renderRosterRows(STUDENTS);
+}
+
+function renderRosterRows(students) {
+  const tbody = $('roster-body');
+  if (!tbody) return;
+  tbody.innerHTML = students.map(s => {
+    const [bg,fg] = avatarColors(s.name);
+    const g = (subId) => {
+      const v = s.grades[subId][5];
+      return `<span style="font-weight:600;color:${gradeColor(v)}">${v}%</span>`;
+    };
+    return `<tr onclick="navigateTo('teacher-student-detail',{selectedStudentId:'${s.id}'})">
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="background:${bg};color:${fg};width:34px;height:34px;font-size:.78rem">${initials(s.name)}</div>
+          <span style="font-weight:600;color:var(--ink)">${s.name}</span>
+        </div>
+      </td>
+      <td>${g('math')}</td>
+      <td>${g('arabic')}</td>
+      <td>${g('science')}</td>
+      <td>${g('english')}</td>
+      <td><span style="color:${s.absences>=3?'var(--alert)':s.absences>=1?'var(--highlight)':'var(--growth)';font-weight:600}">${s.absences}</span></td>
+      <td>${riskBadge(s.risk)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();navigateTo('teacher-student-detail',{selectedStudentId:'${s.id}'})">عرض ←</button></td>
+    </tr>`;
+  }).join('');
+  if ($('roster-count')) $('roster-count').textContent = `${students.length} طالباً`;
+}
+
+function filterRoster(query) {
+  const riskVal = $('risk-filter') ? $('risk-filter').value : '';
+  let filtered = STUDENTS;
+  if (query) filtered = filtered.filter(s=>s.name.includes(query));
+  if (riskVal) filtered = filtered.filter(s=>s.risk===riskVal);
+  renderRosterRows(filtered);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STUDENT DETAIL
+══════════════════════════════════════════════════════════════ */
+function renderStudentDetail(el) {
+  const s = STUDENTS.find(x=>x.id===STATE.selectedStudentId) || STUDENTS[0];
+  const avg = avgGrade(s.grades);
+  const [bg,fg] = avatarColors(s.name);
+  const prevAvg = Math.round(Object.values(s.grades).map(arr=>arr[0]).reduce((a,b)=>a+b,0)/4);
+  const diff = avg - prevAvg;
+  const trendStr = diff>0?`<span class="trend-up">▲ +${diff}% منذ الأسبوع 1</span>`:diff<0?`<span class="trend-down">▼ ${diff}% منذ الأسبوع 1</span>`:`<span class="trend-flat">◆ مستقر</span>`;
+
+  el.innerHTML = `
+    <!-- Breadcrumb -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;font-size:.82rem;color:#6b7a74">
+      <button class="btn btn-ghost btn-sm" onclick="navigateTo('teacher-roster')" style="padding:4px 10px">→ قائمة الطلاب</button>
+      <span>/</span>
+      <span style="color:var(--ink);font-weight:600">${s.name}</span>
+    </div>
+
+    <!-- Header -->
+    <div class="student-header">
+      <div class="student-avatar-lg" style="background:${bg};color:${fg}">${initials(s.name)}</div>
+      <div class="student-info">
+        <h2>${s.name}</h2>
+        <div class="student-info-chips">
+          <span class="student-info-chip">الصف السادس «ب»</span>
+          <span class="student-info-chip">غيابات: ${s.absences}</span>
+          <span class="student-info-chip">${trendStr}</span>
+        </div>
+      </div>
+      <div style="margin-right:auto;text-align:center">
+        <div class="student-grade-badge" style="background:${gradeColor(avg)}22;color:${gradeColor(avg)};border:2px solid ${gradeColor(avg)}44">
+          <div style="font-size:2rem;font-family:'Noto Kufi Arabic',sans-serif;font-weight:900">${avg}%</div>
+          <div style="font-size:.72rem;opacity:.7">المتوسط العام</div>
+        </div>
+      </div>
+      ${riskBadge(s.risk)}
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-bar" id="student-tab-bar">
+      <button class="tab-btn active" data-tab="sd-overview"   onclick="switchStudentTab('sd-overview')">نظرة عامة</button>
+      <button class="tab-btn"        data-tab="sd-trends"     onclick="switchStudentTab('sd-trends')">تطور الأداء</button>
+      <button class="tab-btn"        data-tab="sd-skills"     onclick="switchStudentTab('sd-skills')">الفجوات المهارية</button>
+      <button class="tab-btn"        data-tab="sd-ai"         onclick="switchStudentTab('sd-ai')">توصيات الذكاء الاصطناعي</button>
+    </div>
+
+    <div id="sd-overview" class="tab-panel active">${renderStudentOverviewTab(s)}</div>
+    <div id="sd-trends"   class="tab-panel">${renderStudentTrendsTab(s)}</div>
+    <div id="sd-skills"   class="tab-panel">${renderStudentSkillsTab(s)}</div>
+    <div id="sd-ai"       class="tab-panel">${renderStudentAITab(s)}</div>
+  `;
+
+  // draw overview chart
+  requestAnimationFrame(()=>{
+    drawStudentOverviewChart(s);
+    if (STATE.studentDetailTab === 'sd-trends') drawStudentTrendCharts(s);
+  });
+}
+
+function switchStudentTab(tab) {
+  qsa('.tab-btn', $('student-tab-bar')).forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  qsa('.tab-panel').forEach(p=>p.classList.toggle('active', p.id===tab));
+  setState({ studentDetailTab: tab });
+  const s = STUDENTS.find(x=>x.id===STATE.selectedStudentId)||STUDENTS[0];
+  requestAnimationFrame(()=>{
+    if (tab==='sd-trends') drawStudentTrendCharts(s);
+    if (tab==='sd-overview') drawStudentOverviewChart(s);
+  });
+}
+
+function renderStudentOverviewTab(s) {
+  return `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px" id="sd-overview-charts-row">
+      <div class="card" style="padding:20px">
+        <div class="section-title" style="margin-bottom:14px">آخر درجة لكل مادة</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="chart-spider"></canvas></div>
+      </div>
+      <div class="card" style="padding:20px">
+        <div class="section-title" style="margin-bottom:14px">مقارنة بمتوسط الفصل</div>
+        ${SUBJECTS.map(sub=>{
+          const sv = s.grades[sub.id][5];
+          const cv = subjectAvg(sub.id);
+          const diff = sv-cv;
+          return `<div style="margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:4px">
+              <span style="font-weight:500">${sub.name}</span>
+              <span style="font-weight:600;color:${diff>=0?'var(--growth)':'var(--alert)'}">${sv}% ${diff>=0?'▲+':'▼'}${Math.abs(diff)}%</span>
+            </div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" style="width:${sv}%;background:${sub.color}"></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderStudentTrendsTab(s) {
+  return SUBJECTS.map(sub=>`
+    <div class="card" style="padding:20px;margin-bottom:16px">
+      <div class="section-title" style="margin-bottom:14px">${sub.name} — الأداء خلال 6 أسابيع</div>
+      <div class="chart-wrap" style="height:160px"><canvas id="chart-trend-${sub.id}"></canvas></div>
+    </div>
+  `).join('');
+}
+
+function renderStudentSkillsTab(s) {
+  if (!s.skillGaps.length) return `<div style="text-align:center;padding:60px;color:#6b7a74">لا توجد فجوات مهارية مسجّلة — أداء ممتاز! ✓</div>`;
+  return `
+    <div class="card" style="padding:22px">
+      <div class="section-title" style="margin-bottom:16px">الفجوات المهارية المكتشفة</div>
+      ${s.skillGaps.map(g=>{
+        const sub = SUBJECTS.find(x=>x.id===g.subject);
+        return `<div class="skill-item">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:.9rem;color:var(--ink);margin-bottom:4px">${g.skill}</div>
+            <div style="font-size:.78rem;color:#6b7a74">${sub?.name||''}</div>
+            <div style="margin-top:8px" class="progress-bar-track">
+              <div class="progress-bar-fill" style="width:${g.mastery}%;background:${g.mastery<40?'var(--alert)':g.mastery<60?'var(--highlight)':'var(--growth)'}"></div>
+            </div>
+          </div>
+          <div class="skill-mastery" style="color:${g.mastery<40?'var(--alert)':g.mastery<60?'var(--highlight)':'var(--growth)'}">
+            ${g.mastery}%<br><span style="font-size:.68rem;font-weight:400">إتقان</span>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="goToRemedialQuiz('${s.id}','${g.skill}')">اختبار علاجي</button>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderStudentAITab(s) {
+  return `
+    <div class="ai-card" style="margin-bottom:20px">
+      <div class="ai-header">
+        <div class="ai-icon">
+          <svg width="18" height="18" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="white" stroke="none"/></svg>
+        </div>
+        <div>
+          <div style="font-family:'Noto Kufi Arabic',sans-serif;font-weight:700;color:var(--growth)">توصية الذكاء الاصطناعي</div>
+          <div style="font-size:.75rem;color:#4a7a5a">بناءً على تحليل 6 أسابيع</div>
+        </div>
+        <span class="badge badge-success" style="margin-right:auto">محدّث اليوم</span>
+      </div>
+      <p style="font-size:.92rem;line-height:1.8;color:var(--text)">${s.aiRec}</p>
+    </div>
+    ${s.skillGaps.length?`
+    <div style="margin-top:16px">
+      <div class="section-title" style="margin-bottom:12px">إجراءات مقترحة</div>
+      ${s.skillGaps.map(g=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:white;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px">
+          <div>
+            <div style="font-weight:600;font-size:.88rem">${g.skill}</div>
+            <div style="font-size:.75rem;color:#6b7a74">مستوى الإتقان: ${g.mastery}%</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="goToRemedialQuiz('${s.id}','${g.skill}')">إنشاء اختبار علاجي</button>
+        </div>
+      `).join('')}
+    </div>`:''}
+  `;
+}
+
+function drawStudentOverviewChart(s) {
+  const ctx = $('chart-spider');
+  if (!ctx) return;
+  destroyChart('spider');
+  STATE.charts['spider'] = new Chart(ctx.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: SUBJECTS.map(x=>x.name),
+      datasets: [{
+        label: s.name,
+        data: SUBJECTS.map(sub=>s.grades[sub.id][5]),
+        backgroundColor: SUBJECTS.map(sub=>sub.color+'99'),
+        borderColor: SUBJECTS.map(sub=>sub.color),
+        borderWidth: 2, borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        y:{ min:40,max:100, grid:{color:'rgba(0,0,0,.05)'}, ticks:{font:{family:'IBM Plex Sans Arabic'}} },
+        x:{ grid:{display:false}, ticks:{font:{family:'IBM Plex Sans Arabic'}} }
+      }
+    }
+  });
+}
+
+function drawStudentTrendCharts(s) {
+  SUBJECTS.forEach(sub=>{
+    const canvas = $(`chart-trend-${sub.id}`);
+    if (!canvas) return;
+    destroyChart(`trend-${sub.id}`);
+    const classAvgs = WEEKS.map((_,i)=>Math.round(STUDENTS.map(st=>st.grades[sub.id][i]).reduce((a,b)=>a+b,0)/STUDENTS.length));
+    STATE.charts[`trend-${sub.id}`] = new Chart(canvas.getContext('2d'),{
+      type:'line',
+      data:{
+        labels: WEEKS,
+        datasets:[
+          { label:s.name, data:s.grades[sub.id], borderColor:sub.color, backgroundColor:sub.color+'22', borderWidth:2, pointRadius:4, pointBackgroundColor:sub.color, tension:.3, fill:true },
+          { label:'متوسط الفصل', data:classAvgs, borderColor:'#aaa', borderDash:[4,4], borderWidth:1.5, pointRadius:0, tension:.3 }
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ labels:{font:{family:'IBM Plex Sans Arabic'},boxWidth:10} } },
+        scales:{
+          y:{ min:40,max:100, grid:{color:'rgba(0,0,0,.04)'}, ticks:{font:{family:'IBM Plex Sans Arabic'}} },
+          x:{ grid:{display:false}, ticks:{font:{family:'IBM Plex Sans Arabic'}} }
+        }
+      }
+    });
+  });
+}
+
+async function goToRemedialQuiz(studentId, skill) {
+  setState({ selectedStudentId: studentId, selectedSkill: skill, quizQuestions:[], quizAnswers:{}, quizLoading: true });
+  // Set up page shell
+  Object.keys(STATE.charts).forEach(k=>{ try{STATE.charts[k].destroy();}catch(e){} });
+  STATE.charts = {};
+  $('content').innerHTML = '';
+  const el = document.createElement('div');
+  el.className = 'page';
+  $('content').appendChild(el);
+  $('top-bar-title').textContent = 'الاختبار العلاجي';
+  setNavActive('teacher-student-detail');
+
+  // Show loading skeleton while AI generates
+  const s = STUDENTS.find(x=>x.id===studentId)||STUDENTS[0];
+  el.innerHTML = `
+    <div style="max-width:740px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;font-size:.82rem;color:#6b7a74">
+        <button class="btn btn-ghost btn-sm" onclick="navigateTo('teacher-student-detail',{selectedStudentId:'${studentId}'})" style="padding:4px 10px">→ ملف الطالب</button>
+        <span>/</span><span style="color:var(--ink);font-weight:600">اختبار علاجي</span>
+      </div>
+      <div class="card" style="padding:24px;margin-bottom:20px;border-right:4px solid var(--growth)">
+        <div style="font-family:'Noto Kufi Arabic',sans-serif;font-weight:700;font-size:1.1rem;color:var(--ink);margin-bottom:4px">جارٍ إنشاء الاختبار العلاجي بالذكاء الاصطناعي…</div>
+        <div style="font-size:.82rem;color:#6b7a74">المهارة: <strong>${skill}</strong> • الطالب: <strong>${s.name}</strong></div>
+      </div>
+      <div id="quiz-loading-area">
+        ${[1,2,3,4,5].map(i=>`
+          <div class="card" style="padding:20px;margin-bottom:14px">
+            <div class="skeleton" style="height:16px;width:80%;margin-bottom:14px"></div>
+            ${[1,2,3,4].map(()=>`<div class="skeleton" style="height:38px;border-radius:8px;margin-bottom:8px"></div>`).join('')}
+          </div>`).join('')}
+      </div>
+    </div>
+  `;
+
+  // Try OpenAI API
+  let questions = null;
+  try {
+    questions = await generateQuizWithAI(skill, s.name);
+  } catch(e) {
+    console.warn('OpenAI quiz generation failed, using local bank:', e.message);
+  }
+
+  // Use local bank as fallback
+  if (!questions || !questions.length) {
+    questions = getQuizForSkill(skill);
+  }
+
+  setState({ quizQuestions: questions, quizLoading: false });
+
+  // Re-render with actual questions
+  $('content').innerHTML = '';
+  const el2 = document.createElement('div');
+  el2.className = 'page';
+  $('content').appendChild(el2);
+  renderRemedialQuizPage(el2, questions);
+}
+
+async function generateQuizWithAI(skill, studentName) {
+  const prompt = `أنت مساعد تعليمي متخصص. أنشئ اختباراً علاجياً باللغة العربية يحتوي على 5 أسئلة متعددة الخيارات تستهدف المهارة التالية: "${skill}".
+
+متطلبات:
+- كل سؤال له 4 خيارات (أ، ب، ج، د)
+- حدد رقم الإجابة الصحيحة (0 للخيار الأول، 1 للثاني... إلخ)
+- أضف تلميحاً قصيراً لكل سؤال
+- الأسئلة يجب أن تكون واضحة ومناسبة للصف السادس الابتدائي
+- أعد الرد بتنسيق JSON فقط كالتالي:
+[{"q":"نص السؤال","opts":["أ","ب","ج","د"],"ans":0,"hint":"التلميح"}]`;
+
+  const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${OPENAI_KEY}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 1500,
+    })
+  });
+
+  if (!resp.ok) throw new Error(`OpenAI API error: ${resp.status}`);
+  const data = await resp.json();
+  const raw = data.choices?.[0]?.message?.content || '';
+
+  // Extract JSON from response (may have markdown code fences)
+  const jsonMatch = raw.match(/\[[\s\S]*\]/);
+  if (!jsonMatch) throw new Error('No JSON array in OpenAI response');
+  return JSON.parse(jsonMatch[0]);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   EARLY WARNING
+══════════════════════════════════════════════════════════════ */
+function renderEarlyWarning(el) {
+  const atRisk = STUDENTS.filter(s=>s.risk==='at-risk');
+  const watch  = STUDENTS.filter(s=>s.risk==='watch');
+
+  el.innerHTML = `
+    <div style="margin-bottom:24px">
+      <div style="font-size:.88rem;color:#6b7a74;margin-bottom:16px;line-height:1.7">
+        يرصد نظام الإنذار المبكر الطلاب الذين يُظهرون أنماطاً تستوجب الانتباه، مثل التراجع المتسارع في الدرجات أو تزايد الغيابات. الهدف التدخّل قبل أن تتعمّق الفجوة.
+      </div>
+    </div>
+
+    <div class="section-header"><span class="section-title" style="color:var(--alert)">⚠ طلاب في خطر — ${atRisk.length}</span></div>
+    ${atRisk.map(s=>warningCard(s, 'at-risk')).join('')}
+
+    <div class="section-header" style="margin-top:28px"><span class="section-title" style="color:var(--highlight)">◉ طلاب يحتاجون متابعة — ${watch.length}</span></div>
+    ${watch.map(s=>warningCard(s, 'watch')).join('')}
+  `;
+}
+
+function warningCard(s, level) {
+  const [bg,fg] = avatarColors(s.name);
+  const avg = avgGrade(s.grades);
+  const borderColor = level==='at-risk'?'var(--alert)':'var(--highlight)';
+  return `<div class="warning-card" style="border-right-color:${borderColor}">
+    <div class="avatar" style="background:${bg};color:${fg}">${initials(s.name)}</div>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-weight:700;color:var(--ink)">${s.name}</span>
+        ${riskBadge(s.risk)}
+        <span style="font-weight:600;color:${gradeColor(avg)};margin-right:auto">${avg}%</span>
+      </div>
+      <div class="warning-reasons">
+        ${s.flagReasons.map(r=>`<span class="warning-reason-chip">${r}</span>`).join('')}
+      </div>
+      ${s.skillGaps.length?`<div style="font-size:.78rem;color:#6b7a74;margin-top:8px">فجوة مهارية: ${s.skillGaps[0].skill}</div>`:''}
+    </div>
+    <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="navigateTo('teacher-student-detail',{selectedStudentId:'${s.id}'})">عرض الملف ←</button>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SCORE ENTRY
+══════════════════════════════════════════════════════════════ */
+function renderScoreEntry(el) {
+  el.innerHTML = `
+    <div style="max-width:760px">
+      <div class="card" style="padding:28px;margin-bottom:24px">
+        <div class="section-title" style="margin-bottom:20px">بيانات الاختبار</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div>
+            <label class="label" for="se-student">الطالب</label>
+            <select class="input" id="se-student">
+              <option value="all">جميع الطلاب</option>
+              ${STUDENTS.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <label class="label" for="se-subject">المادة</label>
+            <select class="input" id="se-subject">
+              ${SUBJECTS.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="label" for="se-exam">اسم الاختبار</label>
+          <input class="input" id="se-exam" placeholder="مثال: اختبار الفصل الثاني — الكسور" />
+        </div>
+      </div>
+
+      <div class="card" style="padding:28px">
+        <div class="section-header">
+          <span class="section-title">الأسئلة والمهارات</span>
+          <button class="btn btn-secondary btn-sm" onclick="addScoreRow()">+ أضف سؤالاً</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 100px 36px;gap:8px;margin-bottom:10px;padding:0 2px">
+          <div class="label">وصف السؤال</div>
+          <div class="label skill-col">المهارة المرتبطة</div>
+          <div class="label">الدرجة / 10</div>
+          <div></div>
+        </div>
+        <div id="score-rows-container"></div>
+        <div id="se-success" class="hidden" style="background:linear-gradient(135deg,#d6ede3,#eaf7f0);border:1px solid #b0d8c0;border-radius:var(--radius-md);padding:16px 20px;margin-top:16px;display:flex;align-items:center;gap:12px">
+          <svg width="22" height="22" fill="none" stroke="var(--growth)" stroke-width="2.5" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <span style="color:var(--growth);font-weight:600">تم حفظ الدرجات بنجاح</span>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px">
+          <button class="btn btn-secondary" onclick="resetScoreForm()">إعادة تعيين</button>
+          <button class="btn btn-primary" id="se-submit-btn" onclick="submitScores()">حفظ الدرجات</button>
+        </div>
+      </div>
+    </div>
+  `;
+  renderScoreRows();
+}
+
+function renderScoreRows() {
+  const container = $('score-rows-container');
+  if (!container) return;
+  if (!STATE.scoreRows.length) STATE.scoreRows = [{ question:'', skill:'', score:'' }];
+  container.innerHTML = STATE.scoreRows.map((row, i) => `
+    <div class="question-row" id="row-${i}">
+      <input class="input" placeholder="السؤال ${i+1}" value="${row.question}" oninput="updateScoreRow(${i},'question',this.value)" />
+      <input class="input skill-col" placeholder="المهارة (اختياري)" value="${row.skill}" oninput="updateScoreRow(${i},'skill',this.value)" />
+      <input class="input" type="number" min="0" max="10" placeholder="0–10" value="${row.score}" oninput="updateScoreRow(${i},'score',this.value)" />
+      <button class="btn btn-ghost btn-sm" style="color:var(--alert);padding:6px" onclick="removeScoreRow(${i})" ${STATE.scoreRows.length<=1?'disabled':''}>✕</button>
+    </div>
+  `).join('');
+}
+
+function addScoreRow() {
+  STATE.scoreRows.push({ question:'', skill:'', score:'' });
+  renderScoreRows();
+}
+
+function removeScoreRow(i) {
+  STATE.scoreRows.splice(i,1);
+  if (!STATE.scoreRows.length) STATE.scoreRows=[{question:'',skill:'',score:''}];
+  renderScoreRows();
+}
+
+function updateScoreRow(i, field, val) {
+  STATE.scoreRows[i][field] = val;
+}
+
+function resetScoreForm() {
+  STATE.scoreRows = [{question:'',skill:'',score:''}];
+  renderScoreRows();
+  const s = $('se-success'); if(s) s.classList.add('hidden');
+}
+
+function submitScores() {
+  const btn = $('se-submit-btn');
+  const suc = $('se-success');
+  btn.disabled = true;
+  btn.textContent = 'جاري الحفظ...';
+  setTimeout(()=>{
+    btn.disabled = false;
+    btn.textContent = 'حفظ الدرجات';
+    if (suc) suc.classList.remove('hidden');
+    showToast('✓ تم حفظ درجات الاختبار بنجاح', 'success');
+  }, 1200);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   REMEDIAL QUIZ (full page)
+══════════════════════════════════════════════════════════════ */
+function renderRemedialQuizPage(el, questions) {
+  const s = STUDENTS.find(x=>x.id===STATE.selectedStudentId)||STUDENTS[0];
+  const skill = STATE.selectedSkill;
+  if (!questions || !questions.length) questions = getQuizForSkill(skill);
+  const isAIGenerated = STATE.quizQuestions && STATE.quizQuestions.length > 0;
+
+  el.innerHTML = `
+    <!-- Breadcrumb -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;font-size:.82rem;color:#6b7a74">
+      <button class="btn btn-ghost btn-sm" onclick="navigateTo('teacher-student-detail',{selectedStudentId:'${s.id}'})" style="padding:4px 10px">→ ملف الطالب</button>
+      <span>/</span>
+      <span style="color:var(--ink);font-weight:600">اختبار علاجي</span>
+    </div>
+
+    <div style="max-width:740px">
+      <!-- Header -->
+      <div class="card" style="padding:24px;margin-bottom:20px;border-right:4px solid var(--growth)">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div style="flex:1">
+            <div style="font-family:'Noto Kufi Arabic',sans-serif;font-weight:700;font-size:1.1rem;color:var(--ink);margin-bottom:4px">اختبار علاجي — ${skill}</div>
+            <div style="font-size:.82rem;color:#6b7a74">الطالب: <strong>${s.name}</strong> • مستوى الإتقان الحالي: <strong style="color:var(--alert)">${s.skillGaps.find(g=>g.skill===skill)?.mastery||32}%</strong></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="badge badge-neutral">5 أسئلة</span>
+            <span class="badge badge-warning" style="display:flex;align-items:center;gap:6px">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+              يحتاج مراجعة المعلم
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI badge -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+        <div class="ai-icon" style="width:28px;height:28px;flex-shrink:0">
+          <svg width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <span style="font-size:.82rem;color:#4a7a5a;font-weight:500">${isAIGenerated ? 'تم إنشاء هذه الأسئلة مباشرةً بواسطة GPT-4o Mini استناداً إلى تحليل الفجوات المهارية' : 'أسئلة من بنك الأسئلة العلاجية المُعدّ مسبقاً لهذه المهارة'}</span>
+        <span class="badge ${isAIGenerated ? 'badge-success' : 'badge-neutral'}" style="margin-right:auto;font-size:.65rem">${isAIGenerated ? '✦ ذكاء اصطناعي حيّ' : 'بنك أسئلة محلي'}</span>
+        <span class="badge badge-coming" style="font-size:.65rem">صعوبة تكيفية قريباً</span>
+      </div>
+
+      <!-- Questions -->
+      ${questions.map((q,i)=>`
+        <div class="quiz-question" id="qq-${i}">
+          <div style="font-weight:600;font-size:.92rem;color:var(--ink);margin-bottom:12px">
+            <span style="color:var(--growth);font-family:'Noto Kufi Arabic',sans-serif">س${i+1}.</span> ${q.q}
+          </div>
+          ${q.opts.map((opt,j)=>`
+            <label class="quiz-option" id="opt-${i}-${j}" onclick="selectQuizOpt(${i},${j},this)">
+              <input type="radio" name="q${i}" value="${j}" style="accent-color:var(--growth)" />
+              <span style="font-size:.88rem">${opt}</span>
+            </label>
+          `).join('')}
+          <div class="hidden" id="hint-${i}" style="margin-top:10px;background:#f0f7f3;border-radius:var(--radius-sm);padding:8px 12px;font-size:.8rem;color:#2a5c42">
+            💡 تلميح: ${q.hint}
+          </div>
+          <button class="btn btn-ghost btn-sm" style="margin-top:8px;font-size:.76rem;color:var(--growth)" onclick="toggleHint(${i})">عرض تلميح</button>
+        </div>
+      `).join('')}
+
+      <!-- Actions -->
+      <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="navigateTo('teacher-student-detail',{selectedStudentId:'${s.id}'})">← رجوع</button>
+        <button class="btn btn-primary" onclick="openSendQuizModal()">مراجعة وإرسال للطالب</button>
+      </div>
+    </div>
+
+    <!-- Send quiz modal -->
+    <div class="modal-backdrop hidden" id="modal-send-quiz">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3 style="font-family:'Noto Kufi Arabic',sans-serif;font-size:1.05rem">إرسال الاختبار للطالب</h3>
+          <button class="modal-close" onclick="closeModal('modal-send-quiz')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div style="background:linear-gradient(135deg,#faefd2,#fde9ac);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;font-size:.85rem;color:#7a5012;line-height:1.6">
+            ⚠ تذكير: أنت المعلم — لك الحق في تعديل أي سؤال أو إلغاء الإرسال. لا يصل الاختبار للطالب إلا بعد موافقتك.
+          </div>
+          <p style="font-size:.88rem;color:var(--text);line-height:1.7">
+            سيتم إرسال اختبار علاجي مكوّن من <strong>5 أسئلة</strong> في مهارة <strong>${STATE.selectedSkill}</strong> إلى الطالب <strong>${STUDENTS.find(x=>x.id===STATE.selectedStudentId)?.name||''}</strong>.
+          </p>
+          <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+            <button class="btn btn-secondary" onclick="closeModal('modal-send-quiz')">إلغاء</button>
+            <button class="btn btn-primary" onclick="confirmSendQuiz()">تأكيد الإرسال ✓</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function selectQuizOpt(qi, oi, el) {
+  qsa(`[id^="opt-${qi}-"]`).forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  STATE.quizAnswers[qi] = oi;
+}
+
+function toggleHint(i) {
+  const h = $(`hint-${i}`);
+  if(h) h.classList.toggle('hidden');
+}
+
+function openSendQuizModal() { openModal('modal-send-quiz'); }
+
+function confirmSendQuiz() {
+  closeModal('modal-send-quiz');
+  showToast('✓ تم إرسال الاختبار العلاجي للطالب', 'success', 4000);
+  setTimeout(()=>navigateTo('teacher-student-detail',{selectedStudentId:STATE.selectedStudentId}), 800);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PERIODIC REPORT
+══════════════════════════════════════════════════════════════ */
+function renderPeriodicReport(el) {
+  const classAvg = Math.round(STUDENTS.map(s=>avgGrade(s.grades)).reduce((a,b)=>a+b,0)/STUDENTS.length);
+  const topStudents = [...STUDENTS].sort((a,b)=>avgGrade(b.grades)-avgGrade(a.grades)).slice(0,5);
+  const atRisk = STUDENTS.filter(s=>s.risk!=='normal');
+
+  el.innerHTML = `
+    <div style="max-width:860px">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:16px;gap:10px" class="no-print">
+        <button class="btn btn-secondary" onclick="window.print()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          طباعة التقرير
+        </button>
+      </div>
+
+      <div class="report-header">
+        <div class="report-school">مدرسة الرواد الابتدائية — المملكة العربية السعودية</div>
+        <div class="report-title">التقرير الدوري للأداء الأكاديمي</div>
+        <div class="report-period">الصف السادس «ب» | الفترة: الأسبوع 1 – الأسبوع 6 | 2025</div>
+      </div>
+
+      <!-- Summary stats -->
+      <div class="stat-strip" style="margin-bottom:24px">
+        <div class="stat-card">
+          <div class="stat-label">متوسط الفصل</div>
+          <div class="stat-value">${classAvg}%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">عدد الطلاب</div>
+          <div class="stat-value">25</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">في خطر</div>
+          <div class="stat-value" style="color:var(--alert)">${STUDENTS.filter(s=>s.risk==='at-risk').length}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">متميز (≥85%)</div>
+          <div class="stat-value" style="color:var(--growth)">${STUDENTS.filter(s=>avgGrade(s.grades)>=85).length}</div>
+        </div>
+      </div>
+
+      <!-- Subject averages -->
+      <div class="card" style="padding:22px;margin-bottom:20px">
+        <div class="section-title" style="margin-bottom:16px">متوسط أداء المواد الدراسية</div>
+        ${SUBJECTS.map(sub=>{
+          const avg = subjectAvg(sub.id);
+          return `<div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+            <span style="min-width:160px;font-weight:600;font-size:.88rem">${sub.name}</span>
+            <div class="progress-bar-track" style="flex:1;height:10px">
+              <div class="progress-bar-fill" style="width:${avg}%;background:${sub.color}"></div>
+            </div>
+            <span style="min-width:44px;text-align:center;font-weight:700;color:${gradeColor(avg)}">${avg}%</span>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <!-- Top performers -->
+      <div class="card" style="padding:22px;margin-bottom:20px;overflow:hidden">
+        <div class="section-title" style="margin-bottom:16px">أفضل الطلاب أداءً</div>
+        <table class="data-table">
+          <thead><tr><th>المرتبة</th><th>الطالب</th><th>المتوسط</th><th>الحالة</th></tr></thead>
+          <tbody>
+            ${topStudents.map((s,i)=>`<tr>
+              <td><span style="font-family:'Noto Kufi Arabic',sans-serif;font-weight:700;font-size:1.1rem;color:${i===0?'var(--highlight)':i===1?'#888':'#b87333'}">${i+1}</span></td>
+              <td>${s.name}</td>
+              <td><span style="font-weight:700;color:var(--growth)">${avgGrade(s.grades)}%</span></td>
+              <td>${riskBadge(s.risk)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- At-risk summary -->
+      <div class="card" style="padding:22px;overflow:hidden;margin-bottom:20px">
+        <div class="section-title" style="color:var(--alert);margin-bottom:16px">الطلاب الذين يحتاجون اهتماماً</div>
+        <table class="data-table">
+          <thead><tr><th>الطالب</th><th>الحالة</th><th>السبب الرئيسي</th><th>المتوسط</th></tr></thead>
+          <tbody>
+            ${atRisk.map(s=>`<tr>
+              <td>${s.name}</td>
+              <td>${riskBadge(s.risk)}</td>
+              <td style="font-size:.82rem;color:#6b7a74">${s.flagReasons[0]||'—'}</td>
+              <td><span style="font-weight:700;color:${gradeColor(avgGrade(s.grades))}">${avgGrade(s.grades)}%</span></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="text-align:center;padding:20px;color:#8a9890;font-size:.78rem;border-top:1px solid var(--border)">
+        تم إنشاء هذا التقرير تلقائياً بواسطة منصة بصيرة — LearnaTech © 2025
+      </div>
+    </div>
+  `;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PARENT DASHBOARD
+══════════════════════════════════════════════════════════════ */
+function renderParentDashboard(el) {
+  // For demo: show Omar's sister — نورة سلمان الغامدي (normal student, positive trend)
+  const s = STUDENTS.find(x=>x.id==='s09'); // نورة سلمان الغامدي
+  const avg = avgGrade(s.grades);
+  const prevAvg = Math.round(Object.values(s.grades).map(arr=>arr[0]).reduce((a,b)=>a+b,0)/4);
+  const diff = avg - prevAvg;
+
+  const bestSub = SUBJECTS.reduce((best,sub)=>s.grades[sub.id][5]>best.v?{sub,v:s.grades[sub.id][5]}:best, {sub:null,v:0});
+  const weakSub = SUBJECTS.reduce((weak,sub)=>s.grades[sub.id][5]<weak.v?{sub,v:s.grades[sub.id][5]}:weak, {sub:null,v:999});
+
+  el.innerHTML = `
+    <!-- Child selector -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap">
+      <div style="font-size:.82rem;color:#6b7a74">الطالب:</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:99px;padding:7px 18px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px">
+        <div class="avatar" style="width:26px;height:26px;font-size:.65rem;background:#dde8f5;color:#1a3a6a">${initials(s.name)}</div>
+        ${s.name}
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="parent-hero">
+      <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+        <div>
+          <div class="parent-hero-label">المتوسط العام</div>
+          <div class="parent-hero-grade">${avg}%</div>
+          ${diff!==0?`<div style="font-size:.82rem;opacity:.8;margin-top:4px">${diff>0?`▲ تحسّن +${diff}% منذ بداية المتابعة 🎉`:`▼ ${Math.abs(diff)}% منذ بداية المتابعة`}</div>`:''}
+        </div>
+        <div style="flex:1;min-width:200px">
+          <p class="parent-insight">${s.name} تُقبل على التعلّم بحماس واضح — وخاصةً في اللغة العربية حيث تتفوق على أقرانها. نُشجّع على الحفاظ على هذا المستوى مع بعض الاهتمام بالإنجليزية.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- This week -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px" id="parent-cards">
+      <div class="card" style="padding:22px;border-top:4px solid var(--growth)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(62,120,89,.15);display:flex;align-items:center;justify-content:center">
+            <svg width="18" height="18" fill="none" stroke="var(--growth)" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <span style="font-family:'Noto Kufi Arabic',sans-serif;font-weight:700;color:var(--growth)">نقطة قوة هذا الأسبوع</span>
+        </div>
+        <div style="font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:6px">${bestSub.sub?.name}</div>
+        <div style="font-size:.88rem;color:#4a7a5a;line-height:1.7">${s.name} حافظت على درجة <strong>${bestSub.v}%</strong> في ${bestSub.sub?.name} — أداء رائع يستحق التشجيع.</div>
+      </div>
+      <div class="card" style="padding:22px;border-top:4px solid var(--highlight)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(227,169,62,.15);display:flex;align-items:center;justify-content:center">
+            <svg width="18" height="18" fill="none" stroke="var(--highlight)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <span style="font-family:'Noto Kufi Arabic',sans-serif;font-weight:700;color:#8a6118">يحتاج اهتماماً</span>
+        </div>
+        <div style="font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:6px">${weakSub.sub?.name}</div>
+        <div style="font-size:.88rem;color:#7a5012;line-height:1.7">درجة <strong>${weakSub.v}%</strong> في ${weakSub.sub?.name} — يمكن تحسينها بتمرين بسيط يومي.</div>
+      </div>
+    </div>
+
+    <!-- Recommendation -->
+    <div class="card" style="padding:24px;margin-bottom:24px;display:flex;align-items:flex-start;gap:16px">
+      <div style="width:48px;height:48px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="22" height="22" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </div>
+      <div>
+        <div style="font-family:'Noto Kufi Arabic',sans-serif;font-weight:700;font-size:1rem;color:var(--ink);margin-bottom:6px">توصية عملية لهذا الأسبوع</div>
+        <p style="font-size:.9rem;color:var(--text);line-height:1.8">خصّص <strong>10 دقائق يومياً</strong> لقراءة جملة قصيرة باللغة الإنجليزية بصوت عالٍ مع ابنتك — هذا وحده سيُحدث فرقاً ملموساً بنهاية الشهر.</p>
+      </div>
+    </div>
+
+    <!-- Subject progress -->
+    <div class="card" style="padding:22px;margin-bottom:24px">
+      <div class="section-title" style="margin-bottom:16px">الأداء التفصيلي لكل مادة</div>
+      ${SUBJECTS.map(sub=>{
+        const grades = s.grades[sub.id];
+        const latest = grades[grades.length-1];
+        const first  = grades[0];
+        const change = latest - first;
+        return `<div style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-weight:600;font-size:.9rem">${sub.name}</span>
+            <div style="display:flex;align-items:center;gap:10px">
+              ${change>0?`<span class="trend-up">▲ +${change}%</span>`:change<0?`<span class="trend-down">▼ ${Math.abs(change)}%</span>`:`<span class="trend-flat">◆ مستقر</span>`}
+              <span style="font-weight:700;color:${gradeColor(latest)}">${latest}%</span>
+            </div>
+          </div>
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" style="width:${latest}%;background:${sub.color}"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px">
+            ${grades.map((g,i)=>`<div style="width:8px;height:8px;border-radius:50%;background:${sub.color};opacity:${0.3+0.7*(i/5)}" title="${WEEKS[i]}: ${g}%"></div>`).join('')}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- Progress chart -->
+    <div class="card" style="padding:22px">
+      <div class="section-title" style="margin-bottom:16px">تطور المتوسط العام</div>
+      <div class="chart-wrap" style="height:180px"><canvas id="chart-parent-trend"></canvas></div>
+    </div>
+  `;
+
+  requestAnimationFrame(()=>{
+    const ctx = $('chart-parent-trend');
+    if (!ctx) return;
+    const weekAvgs = WEEKS.map((_,wi)=>Math.round(SUBJECTS.map(sub=>s.grades[sub.id][wi]).reduce((a,b)=>a+b,0)/4));
+    destroyChart('parent-trend');
+    STATE.charts['parent-trend'] = new Chart(ctx.getContext('2d'),{
+      type:'line',
+      data:{
+        labels:WEEKS,
+        datasets:[{
+          label:'المتوسط العام',
+          data:weekAvgs,
+          borderColor:'var(--growth)',
+          backgroundColor:'rgba(62,120,89,.15)',
+          borderWidth:2.5, pointRadius:5, pointBackgroundColor:'var(--growth)', tension:.3, fill:true
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false} },
+        scales:{
+          y:{ min:70,max:100, grid:{color:'rgba(0,0,0,.04)'}, ticks:{font:{family:'IBM Plex Sans Arabic'}} },
+          x:{ grid:{display:false}, ticks:{font:{family:'IBM Plex Sans Arabic'}} }
+        }
+      }
+    });
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   COMING SOON
+══════════════════════════════════════════════════════════════ */
+function renderComingSoon(title, desc, iconName, el) {
+  if (!el) {
+    const content = $('content');
+    el = content.querySelector('.page') || content;
+  }
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:center;min-height:60vh">
+      <div style="text-align:center;max-width:440px;padding:20px">
+        <span class="badge badge-coming" style="font-size:.82rem;padding:5px 16px;margin-bottom:24px;display:inline-block">قريباً</span>
+        <div class="coming-soon-icon" style="margin:0 auto 20px">
+          ${iconSvg(iconName)||'<div style="width:30px;height:30px;background:var(--highlight);border-radius:50%"></div>'}
+        </div>
+        <h2 style="font-size:1.4rem;margin-bottom:12px">${title}</h2>
+        <p style="color:#6b7a74;font-size:.92rem;line-height:1.8;margin-bottom:28px">${desc}</p>
+        <div style="background:linear-gradient(135deg,#faefd2,#fde9ac);border-radius:var(--radius-md);padding:16px 20px;border:1px solid #f0cc76">
+          <div style="font-size:.82rem;color:#7a5012;line-height:1.7">هذه الميزة جزء من خارطة طريق <strong>بصيرة</strong> الكاملة. يُمكن النقاش حول إدراجها في برنامج التجربة الأولى.</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
+  // ensure landing visible
+  $('landing-screen').classList.remove('hidden');
+  $('shell').classList.add('hidden');
+});
+</script>
+</body>
+</html>
