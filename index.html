@@ -8,7 +8,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@700;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet" />
-  <script src="config.js"></script>
+  <!-- Pre-define config so app works even without config.js (which is gitignored) -->
+  <script>window.BASEERA_CONFIG = {};</script>
+  <!-- config.js holds the OpenAI key locally — gitignored, never committed -->
+  <script src="config.js" onerror="console.info('config.js not found — AI quiz will use local question bank')"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     /* ─── DESIGN TOKENS ─────────────────────────────────────── */
