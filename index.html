@@ -12,7 +12,7 @@
   <script>window.BASEERA_CONFIG = {};</script>
   <!-- config.js holds the OpenAI key locally — gitignored, never committed -->
   <script src="config.js" onerror="console.info('config.js not found — AI quiz will use local question bank')"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" onerror="this.onerror=null;this.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js'"></script>
   <style>
     /* ─── DESIGN TOKENS ─────────────────────────────────────── */
     :root {
@@ -322,6 +322,7 @@
     .landing-card::before {
       content: ''; position: absolute; inset: 0;
       background: linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.01));
+      pointer-events: none;
     }
     .landing-card:hover {
       border-color: var(--growth);
@@ -951,7 +952,23 @@ function initials(name) {
 }
 
 function destroyChart(key) {
-  if (STATE.charts[key]) { STATE.charts[key].destroy(); delete STATE.charts[key]; }
+  if (STATE.charts[key]) {
+    try { STATE.charts[key].destroy(); } catch(e) {}
+    delete STATE.charts[key];
+  }
+}
+
+function createSafeChart(ctx, config) {
+  if (typeof Chart === 'undefined') {
+    console.warn('Chart.js is not loaded.');
+    return null;
+  }
+  try {
+    return new Chart(ctx, config);
+  } catch(e) {
+    console.error('Error creating chart:', e);
+    return null;
+  }
 }
 
 function showToast(msg, type='', duration=3000) {
@@ -1208,52 +1225,56 @@ function renderTeacherOverview(el) {
   // draw charts after DOM ready
   requestAnimationFrame(() => {
     // Subject averages bar
-    const ctx1 = $('chart-subjects').getContext('2d');
-    STATE.charts['subjects'] = new Chart(ctx1, {
-      type: 'bar',
-      data: {
-        labels: SUBJECTS.map(s=>s.name),
-        datasets: [{
-          data: SUBJECTS.map(s=>subjectAvg(s.id)),
-          backgroundColor: SUBJECTS.map(s=>s.color+'cc'),
-          borderColor: SUBJECTS.map(s=>s.color),
-          borderWidth: 2, borderRadius: 6,
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins:{ legend:{display:false} },
-        scales: {
-          y:{ min:50, max:100, grid:{color:'rgba(0,0,0,.05)'}, ticks:{font:{family:'IBM Plex Sans Arabic'}} },
-          x:{ grid:{display:false}, ticks:{font:{family:'IBM Plex Sans Arabic'}} }
+    const el1 = $('chart-subjects');
+    if (el1) {
+      STATE.charts['subjects'] = createSafeChart(el1.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: SUBJECTS.map(s=>s.name),
+          datasets: [{
+            data: SUBJECTS.map(s=>subjectAvg(s.id)),
+            backgroundColor: SUBJECTS.map(s=>s.color+'cc'),
+            borderColor: SUBJECTS.map(s=>s.color),
+            borderWidth: 2, borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins:{ legend:{display:false} },
+          scales: {
+            y:{ min:50, max:100, grid:{color:'rgba(0,0,0,.05)'}, ticks:{font:{family:'IBM Plex Sans Arabic'}} },
+            x:{ grid:{display:false}, ticks:{font:{family:'IBM Plex Sans Arabic'}} }
+          }
         }
-      }
-    });
+      });
+    }
 
     // Distribution donut
     const excellent = STUDENTS.filter(s=>avgGrade(s.grades)>=85).length;
     const good      = STUDENTS.filter(s=>{ const a=avgGrade(s.grades); return a>=70&&a<85; }).length;
     const weak      = STUDENTS.filter(s=>avgGrade(s.grades)<70).length;
-    const ctx2 = $('chart-dist').getContext('2d');
-    STATE.charts['dist'] = new Chart(ctx2, {
-      type: 'doughnut',
-      data: {
-        labels: ['متميز (≥85%)','جيد (70-84%)','ضعيف (<70%)'],
-        datasets: [{
-          data: [excellent, good, weak],
-          backgroundColor: ['#3E7859cc','#E3A93Ecc','#B8503Fcc'],
-          borderColor: ['#3E7859','#E3A93E','#B8503F'],
-          borderWidth: 2,
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        cutout: '60%',
-        plugins: {
-          legend:{ position:'bottom', labels:{ font:{family:'IBM Plex Sans Arabic'}, boxWidth:12 } }
+    const el2 = $('chart-dist');
+    if (el2) {
+      STATE.charts['dist'] = createSafeChart(el2.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['متميز (≥85%)','جيد (70-84%)','ضعيف (<70%)'],
+          datasets: [{
+            data: [excellent, good, weak],
+            backgroundColor: ['#3E7859cc','#E3A93Ecc','#B8503Fcc'],
+            borderColor: ['#3E7859','#E3A93E','#B8503F'],
+            borderWidth: 2,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          cutout: '60%',
+          plugins: {
+            legend:{ position:'bottom', labels:{ font:{family:'IBM Plex Sans Arabic'}, boxWidth:12 } }
+          }
         }
-      }
-    });
+      });
+    }
   });
 }
 
@@ -1315,7 +1336,7 @@ function renderRosterRows(students) {
       <td>${g('arabic')}</td>
       <td>${g('science')}</td>
       <td>${g('english')}</td>
-      <td><span style="color:${s.absences>=3?'var(--alert)':s.absences>=1?'var(--highlight)':'var(--growth)';font-weight:600}">${s.absences}</span></td>
+      <td><span style="color:${s.absences>=3?'var(--alert)':s.absences>=1?'var(--highlight)':'var(--growth)'};font-weight:600">${s.absences}</span></td>
       <td>${riskBadge(s.risk)}</td>
       <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();navigateTo('teacher-student-detail',{selectedStudentId:'${s.id}'})">عرض ←</button></td>
     </tr>`;
@@ -1499,7 +1520,7 @@ function drawStudentOverviewChart(s) {
   const ctx = $('chart-spider');
   if (!ctx) return;
   destroyChart('spider');
-  STATE.charts['spider'] = new Chart(ctx.getContext('2d'), {
+  STATE.charts['spider'] = createSafeChart(ctx.getContext('2d'), {
     type: 'bar',
     data: {
       labels: SUBJECTS.map(x=>x.name),
@@ -1528,7 +1549,7 @@ function drawStudentTrendCharts(s) {
     if (!canvas) return;
     destroyChart(`trend-${sub.id}`);
     const classAvgs = WEEKS.map((_,i)=>Math.round(STUDENTS.map(st=>st.grades[sub.id][i]).reduce((a,b)=>a+b,0)/STUDENTS.length));
-    STATE.charts[`trend-${sub.id}`] = new Chart(canvas.getContext('2d'),{
+    STATE.charts[`trend-${sub.id}`] = createSafeChart(canvas.getContext('2d'),{
       type:'line',
       data:{
         labels: WEEKS,
@@ -2108,7 +2129,7 @@ function renderParentDashboard(el) {
     if (!ctx) return;
     const weekAvgs = WEEKS.map((_,wi)=>Math.round(SUBJECTS.map(sub=>s.grades[sub.id][wi]).reduce((a,b)=>a+b,0)/4));
     destroyChart('parent-trend');
-    STATE.charts['parent-trend'] = new Chart(ctx.getContext('2d'),{
+    STATE.charts['parent-trend'] = createSafeChart(ctx.getContext('2d'),{
       type:'line',
       data:{
         labels:WEEKS,
@@ -2160,11 +2181,32 @@ function renderComingSoon(title, desc, iconName, el) {
 /* ══════════════════════════════════════════════════════════════
    BOOT
 ══════════════════════════════════════════════════════════════ */
-window.addEventListener('DOMContentLoaded', () => {
-  // ensure landing visible
-  $('landing-screen').classList.remove('hidden');
-  $('shell').classList.add('hidden');
-});
+window.enterRole = enterRole;
+window.exitToLanding = exitToLanding;
+window.navigateTo = navigateTo;
+window.toggleNav = toggleNav;
+
+function initApp() {
+  const landing = $('landing-screen');
+  const shell = $('shell');
+  if (landing) landing.classList.remove('hidden');
+  if (shell) shell.classList.add('hidden');
+
+  const btnTeacher = $('btn-enter-teacher');
+  if (btnTeacher) {
+    btnTeacher.onclick = function(e) { e.preventDefault(); enterRole('teacher'); };
+  }
+  const btnParent = $('btn-enter-parent');
+  if (btnParent) {
+    btnParent.onclick = function(e) { e.preventDefault(); enterRole('parent'); };
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 </script>
 </body>
 </html>
